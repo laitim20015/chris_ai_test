@@ -82,7 +82,7 @@ class ParserRegistry:
             # 按優先級排序
             self._parsers[ext].sort(key=lambda x: x.priority)
         
-        logger.info(f"註冊解析器: {config.parser_class.__name__} for {file_extensions}")
+        logger.info(f"註冊解析器: {parser_class.__name__} for {file_extensions}")
     
     def get_parsers(self, file_extension: str) -> List[ParserConfig]:
         """
@@ -213,6 +213,9 @@ class ParserFactory:
             Optional[BaseParser]: 解析器實例，如果不支持則返回None
         """
         try:
+            # 確保解析器已初始化
+            _auto_initialize()
+            
             parsers = self.registry.get_parsers(file_extension)
             if not parsers:
                 self.logger.warning(f"沒有找到支持的解析器: {file_extension}")
@@ -535,6 +538,10 @@ def initialize_default_parsers():
         )
         
         logger.info("默認解析器註冊完成")
+        
+        # 顯示已註冊的格式
+        supported_formats = _global_registry.list_supported_formats()
+        logger.info(f"已註冊格式: {list(supported_formats.keys())}")
         
     except ImportError as e:
         logger.warning(f"默認解析器註冊失敗，某些解析器不可用: {e}")

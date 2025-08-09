@@ -177,28 +177,38 @@ class DocumentProcessor:
         """執行單個文本塊和圖片的關聯分析"""
         
         # 1. Caption檢測
-        caption_score = self.caption_detector.detect_caption_relationship(
-            image.__dict__, text_block.__dict__
+        caption_matches = self.caption_detector.detect_captions(
+            text_block.content, text_block.bbox, image.bbox
         )
+        caption_score = max((match.confidence for match in caption_matches), default=0.0)
         
         # 2. 空間關係分析
-        spatial_analysis = self.spatial_analyzer.analyze_spatial_relationship(
-            text_block.__dict__, image.__dict__
+        spatial_features = self.spatial_analyzer.calculate_spatial_features(
+            text_block.bbox, image.bbox
         )
         
         # 3. 語義相似度分析
-        semantic_score = self.semantic_analyzer.calculate_semantic_similarity(
+        semantic_score = self.semantic_analyzer.calculate_similarity(
             text_block.content, 
             image.alt_text or f"Image {image.id}"
         )
         
         # 4. 綜合評分
+        # 計算空間評分（基於空間特徵）
+        spatial_score = min(1.0, 1.0 - min(spatial_features.center_distance / 1000.0, 1.0))
+        
+        # 計算佈局評分（基於對齊特徵）
+        layout_score = spatial_features.alignment_score
+        
+        # 計算距離評分（基於最小距離）
+        proximity_score = min(1.0, 1.0 - min(spatial_features.min_distance / 500.0, 1.0))
+        
         final_score, details = self.association_scorer.calculate_simple_score(
             caption_score=caption_score,
-            spatial_score=spatial_analysis.get("overall_score", 0.0),
+            spatial_score=spatial_score,
             semantic_score=semantic_score,
-            layout_score=spatial_analysis.get("layout_score", 0.0),
-            proximity_score=spatial_analysis.get("proximity_score", 0.0)
+            layout_score=layout_score,
+            proximity_score=proximity_score
         )
         
         return {
@@ -206,13 +216,18 @@ class DocumentProcessor:
             "image_id": image.id,
             "final_score": final_score,
             "caption_score": caption_score,
-            "spatial_score": spatial_analysis.get("overall_score", 0.0),
+            "spatial_score": spatial_score,
             "semantic_score": semantic_score,
-            "layout_score": spatial_analysis.get("layout_score", 0.0),
-            "proximity_score": spatial_analysis.get("proximity_score", 0.0),
-            "spatial_relation": spatial_analysis.get("relation_type", "unknown"),
+            "layout_score": layout_score,
+            "proximity_score": proximity_score,
+            "spatial_relation": "calculated",  # 由空間特徵計算得出
             "association_type": "caption" if caption_score > 0.5 else "spatial",
-            "details": details
+            "details": details,
+            "spatial_features": {
+                "center_distance": spatial_features.center_distance,
+                "alignment_score": spatial_features.alignment_score,
+                "min_distance": spatial_features.min_distance
+            }
         }
     
     def _generate_markdown(

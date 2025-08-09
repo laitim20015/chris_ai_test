@@ -84,7 +84,7 @@ class ImageMetadataManager:
     4. 關聯關係的管理
     """
     
-    def __init__(self, metadata_storage_path: str = "data/metadata"):
+    def __init__(self, metadata_storage_path: str = "data/output/metadata"):
         """
         初始化元數據管理器
         

@@ -18,6 +18,7 @@ from ..config.logging_config import setup_logging, get_logger
 from .routes import upload, process, chat, embeddings, status, download
 from .middleware.auth import AuthMiddleware
 from .middleware.error_handler import ErrorHandlerMiddleware
+from .middleware.rate_limit import create_rate_limit_middleware, RateLimitStrategy, RateLimitScope
 from .models.response_models import ErrorResponse
 
 
@@ -71,6 +72,21 @@ def create_app(settings: AppSettings = None) -> FastAPI:
     
     # 添加自定義中間件
     app.add_middleware(ErrorHandlerMiddleware)
+    
+    # 添加限流中間件（如果啟用）
+    if getattr(settings, 'rate_limit_enabled', True):
+        rate_limit_middleware = create_rate_limit_middleware(
+            requests_per_minute=settings.rate_limit_requests_per_minute,
+            requests_per_hour=settings.rate_limit_requests_per_hour,
+            burst_limit=settings.rate_limit_burst_limit,
+            strategy=RateLimitStrategy.TOKEN_BUCKET,
+            scope=RateLimitScope.IP,
+            redis_url=settings.redis_url,
+            whitelist_ips=settings.rate_limit_whitelist_ips
+        )
+        app.add_middleware(rate_limit_middleware)
+        app_logger.info("限流中間件已啟用")
+    
     if settings.auth_enabled:
         app.add_middleware(AuthMiddleware, api_keys=settings.api_keys)
     

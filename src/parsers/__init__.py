@@ -240,51 +240,9 @@ if not validate_parser_environment():
 from src.config.logging_config import get_logger
 logger = get_logger("parsers")
 
-# 自動註冊解析器
-def _register_default_parsers():
-    """註冊默認解析器"""
-    try:
-        from src.parsers.parser_factory import _global_registry, ParserConfig
-        
-        # 註冊PDF解析器
-        pdf_config = ParserConfig(
-            parser_class=PDFParser,
-            priority=1,
-            max_file_size_mb=100.0,
-            features=['text', 'images', 'tables', 'fallback'],
-            fallback_parsers=['pymupdf4llm', 'unstructured']
-        )
-        _global_registry.register('.pdf', pdf_config)
-        
-        # 註冊Word解析器
-        word_config = ParserConfig(
-            parser_class=WordParser,
-            priority=1,
-            max_file_size_mb=50.0,
-            features=['text', 'images', 'tables', 'formatting']
-        )
-        _global_registry.register('.docx', word_config)
-        _global_registry.register('.doc', word_config)
-        
-        # 註冊PowerPoint解析器
-        ppt_config = ParserConfig(
-            parser_class=PowerPointParser,
-            priority=1,
-            max_file_size_mb=100.0,
-            features=['text', 'images', 'slides', 'notes']
-        )
-        _global_registry.register('.pptx', ppt_config)
-        _global_registry.register('.ppt', ppt_config)
-        
-        logger.info("默認解析器註冊完成")
-        supported = _global_registry.list_supported_formats()
-        logger.info(f"已註冊格式: {list(supported.keys())}")
-        
-    except Exception as e:
-        logger.error(f"解析器註冊失敗: {e}")
-
-# 執行註冊
-_register_default_parsers()
+# 解析器初始化移至parser_factory.py，避免重複註冊
+# 使用_auto_initialize()進行懶加載初始化
+logger.info("解析器模組已加載，將使用懶加載方式註冊默認解析器")
 
 logger.info("📄 文件解析模組初始化完成")
 logger.info(f"支持格式: {list(SUPPORTED_FORMATS.keys())}")

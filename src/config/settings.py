@@ -45,6 +45,16 @@ class AppSettings(BaseSettings):
     max_file_size: int = Field(default=100 * 1024 * 1024, description="最大文件大小（字節）")
     upload_timeout: int = Field(default=300, description="上傳超時（秒）")
     
+    # 限流配置
+    rate_limit_enabled: bool = Field(default=True, description="是否啟用API限流")
+    rate_limit_requests_per_minute: int = Field(default=60, description="每分鐘請求數限制")
+    rate_limit_requests_per_hour: int = Field(default=1000, description="每小時請求數限制")
+    rate_limit_burst_limit: int = Field(default=10, description="突發請求限制")
+    rate_limit_whitelist_ips: List[str] = Field(default=[], description="限流白名單IP")
+    
+    # Redis配置（用於分佈式限流）
+    redis_url: Optional[str] = Field(default=None, description="Redis連接URL")
+    
     class Config:
         env_prefix = "APP_"
         case_sensitive = False
@@ -216,7 +226,7 @@ class StorageSettings(BaseSettings):
     
     # 元數據存儲配置
     metadata_storage_path: str = Field(
-        default="data/metadata", description="元數據存儲路徑"
+        default="data/output/metadata", description="元數據存儲路徑"
     )
     metadata_enable_cache: bool = Field(default=True, description="啟用元數據緩存")
     metadata_cache_ttl: int = Field(default=86400, description="元數據緩存TTL（秒）")

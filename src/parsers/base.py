@@ -152,10 +152,13 @@ class ImageContent:
         """百萬像素"""
         return (self.width * self.height) / 1_000_000
     
-    def get_suggested_filename(self) -> str:
-        """獲取建議的文件名（按項目規則命名）"""
+    def get_suggested_filename(self, document_name: str = "document") -> str:
+        """
+        獲取建議的文件名（按項目規則命名）
+        格式：{文件名}_{頁碼}_{圖片序號}_{時間戳}.{格式}
+        """
         timestamp = int(time.time())
-        return f"page_{self.page_number:03d}_img_{self.image_index:03d}_{timestamp}.{self.format.value}"
+        return f"{document_name}_p{self.page_number:03d}_img{self.image_index:03d}_{timestamp}.{self.format.value}"
 
 @dataclass 
 class TableContent:

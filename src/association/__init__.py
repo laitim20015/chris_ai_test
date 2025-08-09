@@ -65,6 +65,16 @@ from src.association.association_scorer import (
     validate_weight_config
 )
 
+from src.association.association_optimizer import (
+    AssociationOptimizer,
+    OptimizationConfig,
+    AssociationQuality,
+    optimize_associations,
+    create_strict_config,
+    create_balanced_config,
+    create_lenient_config
+)
+
 __all__ = [
     # Allen邏輯分析
     "AllenLogicAnalyzer",
@@ -100,6 +110,15 @@ __all__ = [
     "calculate_association_score",
     "rank_associations",
     "validate_weight_config",
+    
+    # 關聯優化
+    "AssociationOptimizer",
+    "OptimizationConfig", 
+    "AssociationQuality",
+    "optimize_associations",
+    "create_strict_config",
+    "create_balanced_config",
+    "create_lenient_config",
 ]
 
 # 模組版本和元數據

@@ -40,6 +40,8 @@ class SemanticAnalyzer:
         self.model_name = model_name
         self.model = None
         self.embedding_cache = {}
+        self.logger = get_logger("semantic_analyzer")
+        self.config = None  # 配置對象，可以在後續設置
         
         # 嘗試加載模型
         try:
@@ -109,12 +111,30 @@ class SemanticAnalyzer:
             return self.embedding_cache[text]
         
         if self.model is None:
-            return np.random.rand(384)  # 默認維度
+            # 使用確定性的零向量作為回退，避免隨機性
+            self.logger.warning(f"語義模型未加載，使用零向量作為回退 (文本: '{text[:50]}...')")
+            # 使用配置中的維度，如果沒有則使用默認值
+            embedding_dim = getattr(self.config, 'embedding_dimension', 384)
+            return np.zeros(embedding_dim, dtype=np.float32)
         
         embedding = self.model.encode(text)
         self.embedding_cache[text] = embedding
         
         return embedding
+    
+    def calculate_similarity(self, text1: str, text2: str) -> float:
+        """
+        計算兩個文本的語義相似度（簡化版本，與其他組件API一致）
+        
+        Args:
+            text1: 文本1
+            text2: 文本2
+            
+        Returns:
+            float: 相似度分數 (0-1)
+        """
+        result = self.calculate_text_similarity(text1, text2)
+        return result.similarity_score
 
 def extract_text_embeddings(texts: List[str], analyzer: Optional[SemanticAnalyzer] = None) -> List[np.ndarray]:
     """批量提取文本嵌入"""

@@ -75,16 +75,7 @@ class LogConfig:
     
     def _get_json_format(self) -> str:
         """獲取JSON格式模板"""
-        return json.dumps({
-            "timestamp": "{time:YYYY-MM-DD HH:mm:ss.SSS}",
-            "level": "{level}",
-            "logger": "{name}",
-            "module": "{module}",
-            "function": "{function}",
-            "line": "{line}",
-            "message": "{message}",
-            "extra": "{extra}"
-        })
+        return "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level} | {name}:{function}:{line} | {message} | {extra}"
     
     def _get_text_format(self) -> str:
         """獲取文本格式模板"""

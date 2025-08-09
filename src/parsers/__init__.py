@@ -42,7 +42,8 @@ from src.parsers.parser_factory import (
     get_parser_for_file,
     register_parser,
     list_supported_formats,
-    create_parser_from_config
+    create_parser_from_config,
+    _global_registry
 )
 
 from src.parsers.pdf_parser import (

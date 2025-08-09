@@ -26,6 +26,25 @@ class AppSettings(BaseSettings):
         default="production", description="運行環境"
     )
     
+    # API配置
+    api_host: str = Field(default="0.0.0.0", description="API綁定主機")
+    api_port: int = Field(default=8000, description="API端口")
+    api_prefix: str = Field(default="/api/v1", description="API路徑前綴")
+    
+    # 認證配置
+    auth_enabled: bool = Field(default=True, description="是否啟用API認證")
+    api_keys: List[str] = Field(default=[], description="有效的API密鑰列表")
+    
+    # CORS配置
+    allowed_origins: List[str] = Field(
+        default=["http://localhost:3000", "http://localhost:8080"],
+        description="允許的CORS來源"
+    )
+    
+    # 文件上傳配置
+    max_file_size: int = Field(default=100 * 1024 * 1024, description="最大文件大小（字節）")
+    upload_timeout: int = Field(default=300, description="上傳超時（秒）")
+    
     class Config:
         env_prefix = "APP_"
         case_sensitive = False
@@ -140,18 +159,34 @@ class AssociationSettings(BaseSettings):
         case_sensitive = False
 
 class ImageSettings(BaseSettings):
-    """圖片處理配置"""
+    """圖片處理配置（按照項目規格文件要求）"""
     
-    # 圖片質量和尺寸
-    quality: int = Field(default=85, ge=1, le=100, description="圖片質量")
-    max_width: int = Field(default=1920, description="最大寬度")
-    max_height: int = Field(default=1080, description="最大高度")
-    format: Literal["jpg", "png", "webp"] = Field(default="jpg", description="圖片格式")
+    # 圖片優化配置（按規格文件標準）
+    target_format: Literal["PNG", "JPEG", "WEBP"] = Field(
+        default="PNG", description="目標圖片格式"
+    )
+    quality: int = Field(default=85, ge=1, le=100, description="JPEG質量")
+    max_width: int = Field(default=1920, description="最大圖片寬度")
+    max_height: int = Field(default=1080, description="最大圖片高度")
+    png_optimize: bool = Field(default=True, description="PNG優化")
+    preserve_transparency: bool = Field(default=True, description="保持透明度")
+    auto_orient: bool = Field(default=True, description="自動方向校正")
+    strip_metadata: bool = Field(default=True, description="移除EXIF元數據")
+    progressive: bool = Field(default=True, description="漸進式JPEG")
+    web_optimized: bool = Field(default=True, description="Web優化")
     
-    # 命名規範
+    # 提取配置
+    min_size: tuple = Field(default=(50, 50), description="最小圖片尺寸 (width, height)")
+    max_size: tuple = Field(default=(4096, 4096), description="最大圖片尺寸")
+    supported_formats: List[str] = Field(
+        default=['PNG', 'JPEG', 'JPG', 'GIF', 'BMP', 'TIFF', 'WEBP', 'HEIF', 'HEIC'], 
+        description="支持的圖片格式"
+    )
+    
+    # 命名規範（遵循規格文件）
     naming_pattern: str = Field(
-        default="{filename}_{page}_{image_seq}_{timestamp}.{format}",
-        description="圖片命名規範"
+        default="{filename}_{page:03d}_{image_seq:03d}_{timestamp}.{format}",
+        description="圖片命名規範：{文件名}_{頁碼}_{圖片序號}_{時間戳}.{格式}"
     )
     
     class Config:
@@ -159,7 +194,7 @@ class ImageSettings(BaseSettings):
         case_sensitive = False
 
 class StorageSettings(BaseSettings):
-    """存儲配置"""
+    """存儲配置（擴展支持圖片存儲）"""
     
     # 存儲類型
     storage_type: Literal["local", "azure", "aws", "gcp"] = Field(
@@ -171,14 +206,37 @@ class StorageSettings(BaseSettings):
     temp_path: Path = Field(default="./data/temp", description="臨時文件路徑")
     output_path: Path = Field(default="./data/output", description="輸出文件路徑")
     
-    # 雲存儲配置
+    # 圖片存儲專用配置
+    image_storage_path: str = Field(
+        default="data/output/images", description="圖片存儲路徑"
+    )
+    image_public_url_base: str = Field(
+        default="http://localhost:8000/images/", description="圖片公共URL基礎地址"
+    )
+    
+    # 元數據存儲配置
+    metadata_storage_path: str = Field(
+        default="data/metadata", description="元數據存儲路徑"
+    )
+    metadata_enable_cache: bool = Field(default=True, description="啟用元數據緩存")
+    metadata_cache_ttl: int = Field(default=86400, description="元數據緩存TTL（秒）")
+    
+    # Azure Blob Storage配置
     azure_account_name: Optional[str] = Field(default=None, description="Azure存儲賬戶名")
     azure_container_name: str = Field(default="rag-documents", description="Azure容器名")
+    azure_storage_key: Optional[str] = Field(default=None, description="Azure存儲密鑰")
+    azure_cdn_domain: Optional[str] = Field(default=None, description="Azure CDN域名")
     
+    # AWS S3配置
     aws_bucket: str = Field(default="rag-documents", description="AWS S3桶名")
     aws_region: str = Field(default="us-east-1", description="AWS區域")
+    aws_access_key: Optional[str] = Field(default=None, description="AWS訪問密鑰")
+    aws_secret_key: Optional[str] = Field(default=None, description="AWS秘密密鑰")
+    aws_cloudfront_domain: Optional[str] = Field(default=None, description="AWS CloudFront域名")
     
+    # Google Cloud Storage配置
     gcp_bucket: str = Field(default="rag-documents", description="GCP存儲桶名")
+    gcp_cdn_domain: Optional[str] = Field(default=None, description="GCP CDN域名")
     
     class Config:
         env_prefix = "STORAGE_"
@@ -228,6 +286,44 @@ class APISettings(BaseSettings):
         env_prefix = ""
         case_sensitive = False
 
+class AzureOpenAISettings(BaseSettings):
+    """Azure OpenAI配置"""
+    
+    # 基本配置
+    endpoint: Optional[str] = Field(default=None, description="Azure OpenAI端點URL")
+    api_key: Optional[str] = Field(default=None, description="Azure OpenAI API密鑰")
+    api_version: str = Field(default="2024-02-01", description="API版本")
+    
+    # 模型配置
+    chat_deployment_name: str = Field(default="gpt-4", description="Chat模型部署名稱")
+    embedding_deployment_name: str = Field(default="text-embedding-ada-002", description="嵌入模型部署名稱")
+    
+    # 請求配置
+    request_timeout: float = Field(default=30.0, description="請求超時時間（秒）")
+    max_retries: int = Field(default=3, description="最大重試次數")
+    retry_delay: float = Field(default=1.0, description="重試延遲（秒）")
+    
+    # 速率限制
+    max_tokens_per_minute: int = Field(default=150000, description="每分鐘最大Token數")
+    max_requests_per_minute: int = Field(default=1000, description="每分鐘最大請求數")
+    
+    # 模型參數默認值
+    default_temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="默認溫度")
+    default_max_tokens: int = Field(default=1000, ge=1, le=4096, description="默認最大Token數")
+    
+    @model_validator(mode='after')
+    def validate_azure_config(self):
+        """驗證Azure OpenAI配置"""
+        if self.endpoint and not self.api_key:
+            raise ValueError("配置了endpoint時必須提供api_key")
+        if self.api_key and not self.endpoint:
+            raise ValueError("配置了api_key時必須提供endpoint")
+        return self
+    
+    class Config:
+        env_prefix = "AZURE_OPENAI_"
+        case_sensitive = False
+
 class LoggingSettings(BaseSettings):
     """日誌配置"""
     
@@ -256,6 +352,7 @@ class Settings(BaseSettings):
     storage: StorageSettings = Field(default_factory=StorageSettings)
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     api: APISettings = Field(default_factory=APISettings)
+    azure_openai: AzureOpenAISettings = Field(default_factory=AzureOpenAISettings)
     logging: LoggingSettings = Field(default_factory=LoggingSettings)
     
     # AI模型配置

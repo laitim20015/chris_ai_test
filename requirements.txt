@@ -13,14 +13,27 @@ python-docx>=0.8.11                # Word文檔解析
 # ====== PowerPoint解析 ======
 python-pptx>=0.6.21                # PowerPoint解析
 
-# ====== 圖片處理 ======
+# ====== 圖片處理 (Phase 3擴展) ======
 Pillow>=10.0.0                     # 圖片處理和優化
+pillow-heif>=0.13.0                # HEIF/HEIC格式支持
 opencv-python>=4.8.0               # 高級圖片處理
+
+# ====== 雲端存儲支持 ======
+azure-storage-blob>=12.17.0        # Azure Blob Storage
+boto3>=1.26.0                      # AWS S3
+botocore>=1.29.0                   # AWS核心庫
+google-cloud-storage>=2.10.0       # Google Cloud Storage
 
 # ====== 語義分析 ======
 sentence-transformers>=2.2.2       # 文本向量化
 torch>=2.0.0                       # PyTorch後端
 transformers>=4.30.0               # Transformer模型
+
+# ====== Azure OpenAI 集成 ======
+openai>=1.0.0                      # OpenAI Python SDK (支援Azure)
+azure-identity>=1.15.0             # Azure身份驗證
+azure-core>=1.29.0                 # Azure核心庫
+tiktoken>=0.5.0                     # Token計算工具
 
 # ====== 空間分析和關聯算法 ======
 numpy>=1.24.0                      # 數值計算基礎

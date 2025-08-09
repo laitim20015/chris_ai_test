@@ -82,7 +82,7 @@ class ParserRegistry:
             # 按優先級排序
             self._parsers[ext].sort(key=lambda x: x.priority)
         
-        logger.info(f"註冊解析器: {parser_class.__name__} for {file_extensions}")
+        logger.info(f"註冊解析器: {config.parser_class.__name__} for {file_extensions}")
     
     def get_parsers(self, file_extension: str) -> List[ParserConfig]:
         """

@@ -1,0 +1,81 @@
+---
+# 這是在檔案最頂端的 YAML "Frontmatter" 區塊，用來告訴 Cursor 如何啟用此規則
+
+# "description" 讓您在 Cursor 規則列表中能輕易辨識此規則的用途
+description: "智能文件轉換與RAG知識庫系統的核心開發規則。包含技術棧、演算法與架構規範。"
+
+# "auto_attach" 會在特定條件下，自動將檔案或資料夾加入到上下文（等同於手動 @）
+auto_attach:
+  # "on_prompt: true" 表示每次提問 (prompt) 都會觸發以下動作
+  - on_prompt: true
+    files:
+      # 將最重要的項目規格文件自動附加，確保 AI 永遠記得專案核心細節
+      - "項目規格文件_文件轉換RAG系統.md"
+---
+
+# --- 分隔線下方，是您原本的 Markdown 規則內容 ---
+
+# 專案規則：智能文件轉換與RAG知識庫系統 v1.2
+
+這份文件定義了本專案的技術規範、架構標準與開發準則。在協助開發此專案時，請嚴格遵守以下所有規則。
+
+### 1. 核心目標與技術棧 (Core Goal & Tech Stack)
+
+**1.1. 專案目標:**
+* 本專案旨在開發一個智能文件轉換系統，能將 Word、PDF、PowerPoint 轉換為標準化 Markdown，並建立精準的圖文關聯以用於 RAG 知識庫。
+
+**1.2. 關鍵技術選型 (非常重要):**
+* **PDF 解析:**
+    * **主要解析器 (性能優先):** 永遠優先使用 `PyMuPDF (fitz)` 進行文件解析。
+    * **Markdown 輸出:** 當需要最佳 Markdown 結構化輸出時，使用 `pymupdf4llm`。
+    * **語義分塊:** 當任務為語義感知分塊時，使用 `unstructured`。
+    * 在 `PDFParser` 的實現中，必須遵循 `PyMuPDF` -> `pymupdf4llm` -> `unstructured` 的多層次備用策略。
+* **Word 解析:** 使用 `python-docx`。
+* **PowerPoint 解析:** 使用 `python-pptx`。
+* **語義分析:** 使用 `sentence-transformers` 進行文本向量化。
+* **API 框架:** 使用 `FastAPI` 構建所有 API 接口。
+* **配置管理:** 使用 `Pydantic` 進行類型安全的配置管理。
+
+### 2. 核心演算法與業務邏輯 (Core Algorithms & Business Logic)
+
+**2.1. 圖文關聯 (最高優先級):**
+* 圖文關聯是專案的核心，所有相關開發都具有高優先級。
+* **關聯度評分模型:** 最終關聯分數必須嚴格按照以下加權模型計算：
+    * `caption_score`: **權重 0.4**
+    * `spatial_score`: **權重 0.3**
+    * `semantic_score`: **權重 0.15**
+    * `layout_score`: **權重 0.1**
+    * `proximity_score`: **權重 0.05**
+
+**2.2. Caption 檢測 (最關鍵指標):**
+* Caption (圖片標題) 檢測是關聯度評分中**最重要**的指標。
+* 檢測演算法必須包含對以下正則表達式模式的匹配：`r'^(Figure|Fig|圖|表|Table)\s*\d+'`, `r'^(Chart|Diagram|Image)\s*\d+'`, `r'如圖\s*\d+|見圖\s*\d+'`。
+
+**2.3. 空間分析:**
+* 空間關係分析必須基於 **Allen 時間間隔邏輯** 的13種空間關係來實現。
+
+### 3. 架構與程式碼規範 (Architecture & Coding Standards)
+
+**3.1. 目錄結構:**
+* 嚴格遵守規格文件中定義的完整目錄結構。 所有源代碼放入 `src/`，測試放入 `tests/`，文件放入 `docs/`。
+
+**3.2. 設計模式:**
+* **工廠模式:** 文件解析器 (`parsers`) 必須使用工廠模式 (`parser_factory.py`)。
+* **適配器模式:** 知識庫集成 (`knowledge_base`) 模組應使用適配器模式。
+
+**3.3. 命名規範:**
+* **圖片檔案命名:** 遵循規範：`{文件名}_{頁碼/幻燈片號}_{圖片序號}_{時間戳}.{格式}`。
+
+**3.4. API 設計:**
+* API 的請求和響應模型都必須使用 Pydantic 在 `src/api/models/` 中定義。
+
+### 4. 開發優先級與流程 (Development Priorities & Workflow)
+
+* **當前開發階段:** 優先完成 **Phase 4: 關聯分析引擎** 的開發任務。
+* **最高優先級任務:** Allen 區間邏輯、Caption 檢測、加權融合評分模型。
+
+### 5. 測試與文件 (Testing & Documentation)
+
+* **測試框架:** 使用 `Pytest`。
+* **測試文件位置:** 測試檔案必須與源代碼結構對應。
+* **文件撰寫:** 演算法規格寫入 `docs/technical_specs/`，API 文件寫入 `docs/api/openapi.yaml`。

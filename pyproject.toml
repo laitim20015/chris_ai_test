@@ -1,0 +1,236 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ap-project-rag"
+version = "1.0.0"
+description = "智能文件轉換與RAG知識庫系統 - Intelligent Document Conversion & RAG Knowledge Base System"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "AP Project Team", email = "team@ap-project.com"}
+]
+maintainers = [
+    {name = "AP Project Team", email = "team@ap-project.com"}
+]
+keywords = [
+    "rag", "knowledge-base", "document-conversion", 
+    "pdf-parser", "markdown", "image-text-association",
+    "spatial-analysis", "allen-logic", "fastapi"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.9"
+dependencies = [
+    # 核心依賴 - 與requirements.txt保持同步
+    "PyMuPDF>=1.23.0",
+    "pymupdf4llm>=0.0.5",
+    "unstructured>=0.11.0",
+    "python-docx>=0.8.11",
+    "python-pptx>=0.6.21",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.23.0",
+    "pydantic>=2.4.0",
+    "pydantic-settings>=2.0.0",
+    "sentence-transformers>=2.2.2",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "Pillow>=10.0.0",
+    "jinja2>=3.1.2",
+    "loguru>=0.7.0",
+    "python-dotenv>=1.0.0",
+    "aiofiles>=23.2.0",
+]
+
+[project.optional-dependencies]
+# 開發依賴
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.24.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+]
+
+# 雲存儲支持
+cloud = [
+    "azure-storage-blob>=12.17.0",
+    "boto3>=1.28.0",
+    "google-cloud-storage>=2.10.0",
+]
+
+# 高級圖片處理
+vision = [
+    "opencv-python>=4.8.0",
+    "scikit-image>=0.21.0",
+]
+
+# 監控和性能
+monitoring = [
+    "prometheus-client>=0.17.0",
+    "redis>=4.6.0",
+]
+
+# 完整安裝（所有可選依賴）
+all = [
+    "ap-project-rag[dev,cloud,vision,monitoring]"
+]
+
+[project.urls]
+Homepage = "https://github.com/ap-project/rag-system"
+Documentation = "https://ap-project.github.io/rag-system"
+Repository = "https://github.com/ap-project/rag-system.git"
+"Bug Tracker" = "https://github.com/ap-project/rag-system/issues"
+
+[project.scripts]
+ap-rag = "src.main:main"
+ap-rag-server = "src.api:start_server"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+"src.markdown.templates" = ["*.j2"]
+"src.config" = ["*.yaml", "*.json"]
+
+# ====== 開發工具配置 ======
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # 排除目錄
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | data/temp
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503", "E501"]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "data/temp",
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = [
+    "unstructured.*",
+    "pymupdf4llm.*",
+    "fitz.*",
+    "sentence_transformers.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "association: marks tests related to association analysis",
+    "parser: marks tests related to file parsing",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/data/temp/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+# ====== 項目元數據 ======
+[tool.ap-project]
+# 自定義項目配置
+version_scheme = "semantic"
+development_status = "beta"
+core_modules = [
+    "parsers",
+    "association", 
+    "image_processing",
+    "markdown",
+    "knowledge_base",
+    "api"
+]
+algorithm_priorities = {
+    "caption_detection" = "highest",
+    "allen_logic" = "high", 
+    "spatial_analysis" = "high",
+    "semantic_analysis" = "medium"
+}

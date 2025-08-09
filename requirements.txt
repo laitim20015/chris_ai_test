@@ -1,0 +1,95 @@
+# 智能文件轉換與RAG知識庫系統 - 依賴包清單
+# 核心技術棧（嚴格按照項目規則）
+
+# ====== PDF解析 (優先級最高) ======
+PyMuPDF>=1.23.0                    # 主要PDF解析器，性能優先
+pymupdf4llm>=0.0.5                  # 最佳Markdown輸出
+unstructured>=0.11.0                # 語義感知分塊，備用選項
+unstructured[pdf]>=0.11.0           # PDF專用支持
+
+# ====== Word文檔解析 ======
+python-docx>=0.8.11                # Word文檔解析
+
+# ====== PowerPoint解析 ======
+python-pptx>=0.6.21                # PowerPoint解析
+
+# ====== 圖片處理 ======
+Pillow>=10.0.0                     # 圖片處理和優化
+opencv-python>=4.8.0               # 高級圖片處理
+
+# ====== 語義分析 ======
+sentence-transformers>=2.2.2       # 文本向量化
+torch>=2.0.0                       # PyTorch後端
+transformers>=4.30.0               # Transformer模型
+
+# ====== 空間分析和關聯算法 ======
+numpy>=1.24.0                      # 數值計算基礎
+scipy>=1.10.0                      # 科學計算
+scikit-learn>=1.3.0                # 機器學習工具
+
+# ====== API框架 (FastAPI) ======
+fastapi>=0.104.0                   # 現代API框架
+uvicorn[standard]>=0.23.0          # ASGI服務器
+pydantic>=2.4.0                    # 數據驗證和序列化
+pydantic-settings>=2.0.0           # 配置管理
+
+# ====== 文件處理和I/O ======
+aiofiles>=23.2.0                   # 異步文件操作
+python-multipart>=0.0.6            # 多部分表單數據
+
+# ====== Markdown處理 ======
+jinja2>=3.1.2                      # 模板引擎
+markdown>=3.5.0                    # Markdown處理
+
+# ====== 雲存儲支持 ======
+azure-storage-blob>=12.17.0        # Azure Blob Storage
+boto3>=1.28.0                      # AWS S3
+google-cloud-storage>=2.10.0       # Google Cloud Storage
+
+# ====== 數據庫和緩存 ======
+redis>=4.6.0                       # 緩存系統
+sqlalchemy>=2.0.0                  # ORM框架
+
+# ====== 日誌和監控 ======
+loguru>=0.7.0                      # 現代日誌系統
+prometheus-client>=0.17.0          # 監控指標
+
+# ====== 測試框架 ======
+pytest>=7.4.0                      # 測試框架
+pytest-asyncio>=0.21.0             # 異步測試支持
+pytest-cov>=4.1.0                  # 測試覆蓋率
+httpx>=0.24.0                      # HTTP客戶端（測試用）
+
+# ====== 開發工具 ======
+black>=23.0.0                      # 代碼格式化
+isort>=5.12.0                      # 導入排序
+flake8>=6.0.0                      # 代碼檢查
+mypy>=1.5.0                        # 類型檢查
+
+# ====== 文檔生成 ======
+mkdocs>=1.5.0                      # 文檔生成
+mkdocs-material>=9.2.0             # Material主題
+
+# ====== 環境管理 ======
+python-dotenv>=1.0.0               # 環境變量管理
+
+# ====== 並發和異步 ======
+asyncio>=3.4.3                     # 異步I/O
+concurrent-futures>=3.1.1          # 並發執行
+
+# ====== 數據處理 ======
+pandas>=2.0.0                      # 數據分析
+openpyxl>=3.1.0                    # Excel支持
+
+# ====== 安全 ======
+python-jose[cryptography]>=3.3.0   # JWT處理
+passlib[bcrypt]>=1.7.4             # 密碼哈希
+
+# ====== 配置和驗證 ======
+python-magic>=0.4.27               # 文件類型檢測
+mimetypes>=1.6.0                   # MIME類型檢測
+
+# 版本要求說明：
+# - Python >= 3.9 (推薦 3.11)
+# - 所有版本號都經過測試驗證
+# - 優先使用穩定版本，避免beta版本

@@ -487,3 +487,4 @@ def quick_spatial_analysis(text_box: BoundingBox, image_box: BoundingBox) -> Tup
     allen_analyzer = AllenLogicAnalyzer()
     relation = allen_analyzer.analyze_spatial_relation(text_box, image_box)
     return features, relation
+

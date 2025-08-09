@@ -234,3 +234,4 @@ algorithm_priorities = {
     "spatial_analysis" = "high",
     "semantic_analysis" = "medium"
 }
+

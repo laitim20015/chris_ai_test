@@ -686,3 +686,4 @@ def parse_pdf_with_fallback(file_path: Union[str, Path],
     """
     parser = PDFParser(config)
     return parser.parse_with_metadata(file_path)
+

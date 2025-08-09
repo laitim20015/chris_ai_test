@@ -117,6 +117,30 @@ class ParserRegistry:
         
         return self._parser_instances[class_name]
     
+    def get_parser(self, file_extension: str) -> Optional[BaseParser]:
+        """
+        根據文件擴展名獲取解析器實例
+        
+        Args:
+            file_extension: 文件擴展名（如 .pdf, .docx）
+            
+        Returns:
+            Optional[BaseParser]: 解析器實例，如果不支持則返回None
+        """
+        try:
+            parsers = self.get_parsers(file_extension)
+            if not parsers:
+                logger.warning(f"沒有找到支持的解析器: {file_extension}")
+                return None
+            
+            # 返回優先級最高的解析器
+            parser_config = parsers[0]
+            return self.get_parser_instance(parser_config.parser_class)
+            
+        except Exception as e:
+            logger.error(f"獲取解析器失敗: {file_extension}, 錯誤: {e}")
+            return None
+    
     def list_supported_formats(self) -> Dict[str, List[str]]:
         """
         列出所有支持的格式
@@ -177,6 +201,30 @@ class ParserFactory:
         """
         self.registry = registry if registry is not None else _global_registry
         self.logger = get_logger("parser_factory")
+    
+    def get_parser(self, file_extension: str) -> Optional[BaseParser]:
+        """
+        根據文件擴展名獲取解析器實例
+        
+        Args:
+            file_extension: 文件擴展名（如 .pdf, .docx）
+            
+        Returns:
+            Optional[BaseParser]: 解析器實例，如果不支持則返回None
+        """
+        try:
+            parsers = self.registry.get_parsers(file_extension)
+            if not parsers:
+                self.logger.warning(f"沒有找到支持的解析器: {file_extension}")
+                return None
+            
+            # 返回優先級最高的解析器
+            parser_config = parsers[0]
+            return self.registry.get_parser_instance(parser_config.parser_class)
+            
+        except Exception as e:
+            self.logger.error(f"獲取解析器失敗: {file_extension}, 錯誤: {e}")
+            return None
     
     def create_parser(self, file_path: Union[str, Path], 
                      prefer_parser: Optional[str] = None,
@@ -507,3 +555,4 @@ class LazyParserFactory:
 
 # 導出懶加載工廠
 lazy_factory = LazyParserFactory()
+

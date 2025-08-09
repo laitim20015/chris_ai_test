@@ -1,299 +1,374 @@
 """
-智能文件轉換與RAG知識庫系統 - 主應用入口
-Main Application Entry Point
+主應用程序入口點
 
-基於FastAPI的現代Web應用，提供：
-- RESTful API接口
-- 文件上傳和處理
-- 實時處理狀態
-- 健康檢查和監控
-- 完整的錯誤處理
+智能文件轉換與RAG知識庫系統的核心處理引擎，
+協調文件解析、圖文關聯分析和Markdown生成的完整流程。
 """
 
-import uvicorn
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
-import asyncio
-from typing import Dict, Any
+import os
+import time
+from typing import Dict, List, Any, Optional
+from pathlib import Path
+from datetime import datetime
 
-from src.config.settings import get_settings
-from src.config.logging_config import get_logger, setup_logging
-from src import get_project_info, validate_association_weights
+from .config.settings import get_settings
+from .config.logging_config import get_logger, PerformanceLogger
+from .parsers import ParserFactory, ParsedContent
+from .association import AssociationScorer
+from .association.allen_logic import AllenLogicAnalyzer
+from .association.caption_detector import CaptionDetector
+from .association.spatial_analyzer import SpatialAnalyzer
+from .association.semantic_analyzer import SemanticAnalyzer
+from .markdown import MarkdownGenerator
+from .utils.file_utils import ensure_directory_exists, get_file_hash
+from .utils.validation import validate_file_path, check_file_safety
 
-# 初始化日誌
-setup_logging()
-logger = get_logger("main")
+logger = get_logger(__name__)
 
-# 獲取配置
-settings = get_settings()
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """應用生命週期管理"""
+class DocumentProcessor:
+    """
+    文件處理核心引擎
     
-    # 啟動時的初始化
-    logger.info("🚀 智能文件轉換與RAG知識庫系統啟動中...")
+    協調整個文件轉換流程，從原始文件到Markdown輸出。
+    支持多種文件格式和智能圖文關聯分析。
+    """
     
-    try:
-        # 驗證配置
-        logger.info("⚙️  驗證系統配置...")
+    def __init__(self):
+        """初始化文件處理器"""
+        self.settings = get_settings()
+        self.parser_factory = ParserFactory()
+        self.markdown_generator = MarkdownGenerator()
         
-        # 驗證關聯度權重配置
-        from src.config.settings import get_association_weights
-        weights = get_association_weights()
-        if not validate_association_weights(weights):
-            raise RuntimeError("關聯度權重配置不符合項目規則")
+        # 初始化關聯分析組件
+        self.allen_analyzer = AllenLogicAnalyzer()
+        self.caption_detector = CaptionDetector()
+        self.spatial_analyzer = SpatialAnalyzer()
+        self.semantic_analyzer = SemanticAnalyzer()
+        self.association_scorer = AssociationScorer()
         
-        # 創建必要目錄
-        settings.create_directories()
-        logger.info("📁 目錄結構創建完成")
+        # 性能監控
+        self.performance_logger = PerformanceLogger()
         
-        # 初始化各個模組（如果需要）
-        logger.info("🔧 初始化核心模組...")
-        
-        # 這裡可以添加其他初始化邏輯，如：
-        # - 數據庫連接
-        # - 緩存系統
-        # - AI模型加載
-        # - 外部服務連接
-        
-        logger.info("✅ 系統初始化完成")
-        
-        yield  # 應用運行期間
-        
-    except Exception as e:
-        logger.error(f"❌ 系統初始化失敗: {e}")
-        raise
+        logger.info("文件處理器初始化完成")
     
-    finally:
-        # 關閉時的清理工作
-        logger.info("🔄 正在關閉系統...")
+    def process_document(
+        self,
+        file_path: str,
+        output_dir: Optional[str] = None,
+        template_name: str = "enhanced.md.j2",
+        save_associations: bool = True
+    ) -> Dict[str, Any]:
+        """
+        處理單個文檔
         
-        # 這裡可以添加清理邏輯，如：
-        # - 關閉數據庫連接
-        # - 清理臨時文件
-        # - 保存狀態
+        Args:
+            file_path: 輸入文件路徑
+            output_dir: 輸出目錄（可選）
+            template_name: 使用的模板名稱
+            save_associations: 是否保存關聯分析結果
+            
+        Returns:
+            Dict: 處理結果，包含生成的文件路徑和統計信息
+        """
         
-        logger.info("👋 系統已安全關閉")
-
-# 創建FastAPI應用
-app = FastAPI(
-    title=settings.app.name,
-    description=settings.app.description,
-    version=settings.app.version,
-    docs_url="/docs" if settings.app.debug else None,
-    redoc_url="/redoc" if settings.app.debug else None,
-    openapi_url="/openapi.json" if settings.app.debug else None,
-    lifespan=lifespan
-)
-
-# 添加中間件
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.api.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-# 全局異常處理
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    """HTTP異常處理器"""
-    logger.error(f"HTTP異常: {exc.status_code} - {exc.detail}")
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": "HTTP錯誤",
-            "detail": exc.detail,
-            "status_code": exc.status_code,
-            "path": str(request.url)
-        }
-    )
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    """通用異常處理器"""
-    logger.error(f"未處理的異常: {type(exc).__name__}: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "內部服務器錯誤",
-            "detail": "系統發生未預期的錯誤，請稍後重試",
-            "type": type(exc).__name__
-        }
-    )
-
-# 基本路由
-@app.get("/")
-async def root() -> Dict[str, Any]:
-    """根路由 - 返回API基本信息"""
-    project_info = get_project_info()
-    return {
-        "message": "歡迎使用智能文件轉換與RAG知識庫系統",
-        "status": "running",
-        "project": project_info,
-        "api_docs": "/docs" if settings.app.debug else "disabled",
-        "environment": settings.app.environment
-    }
-
-@app.get("/health")
-async def health_check() -> Dict[str, Any]:
-    """健康檢查端點"""
-    try:
-        # 檢查各個子系統狀態
-        health_status = {
-            "status": "healthy",
-            "timestamp": asyncio.get_event_loop().time(),
-            "version": settings.app.version,
-            "environment": settings.app.environment,
-            "components": {
-                "api": "healthy",
-                "config": "healthy",
-                "logging": "healthy",
-                "storage": "healthy"
+        start_time = time.time()
+        
+        try:
+            # 1. 文件驗證
+            logger.info(f"開始處理文檔: {file_path}")
+            
+            if not validate_file_path(file_path):
+                raise ValueError(f"文件路徑無效: {file_path}")
+            
+            is_safe, warnings = check_file_safety(file_path)
+            if not is_safe:
+                logger.warning(f"文件安全檢查警告: {warnings}")
+            
+            # 2. 文件解析
+            with self.performance_logger.measure("file_parsing"):
+                parsed_content = self._parse_file(file_path)
+            
+            logger.info(
+                f"文件解析完成 - 文本塊: {len(parsed_content.text_blocks)}, "
+                f"圖片: {len(parsed_content.images)}, "
+                f"表格: {len(parsed_content.tables)}"
+            )
+            
+            # 3. 圖文關聯分析
+            with self.performance_logger.measure("association_analysis"):
+                associations = self._analyze_associations(parsed_content)
+            
+            logger.info(f"關聯分析完成 - 發現 {len(associations)} 個關聯關係")
+            
+            # 4. 生成Markdown
+            with self.performance_logger.measure("markdown_generation"):
+                markdown_content = self._generate_markdown(
+                    parsed_content, associations, template_name
+                )
+            
+            # 5. 保存結果
+            output_files = self._save_results(
+                parsed_content, associations, markdown_content,
+                output_dir, save_associations
+            )
+            
+            # 6. 統計信息
+            processing_time = time.time() - start_time
+            stats = self._collect_statistics(
+                parsed_content, associations, processing_time
+            )
+            
+            logger.info(f"文檔處理完成，耗時: {processing_time:.2f}秒")
+            
+            return {
+                "success": True,
+                "output_files": output_files,
+                "statistics": stats,
+                "processing_time": processing_time
             }
-        }
+            
+        except Exception as e:
+            logger.error(f"文檔處理失敗: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "processing_time": time.time() - start_time
+            }
+    
+    def _parse_file(self, file_path: str) -> ParsedContent:
+        """解析文件內容"""
         
-        # 檢查配置是否有效
-        try:
-            weights = get_association_weights()
-            if validate_association_weights(weights):
-                health_status["components"]["association_config"] = "healthy"
-            else:
-                health_status["components"]["association_config"] = "error"
-                health_status["status"] = "degraded"
-        except Exception:
-            health_status["components"]["association_config"] = "error"
-            health_status["status"] = "degraded"
+        file_extension = Path(file_path).suffix.lower()
+        parser = self.parser_factory.get_parser(file_extension)
         
-        # 檢查存儲目錄
-        try:
-            settings.storage.local_path.exists()
-            health_status["components"]["storage"] = "healthy"
-        except Exception:
-            health_status["components"]["storage"] = "error"
-            health_status["status"] = "degraded"
+        if not parser:
+            raise ValueError(f"不支持的文件格式: {file_extension}")
         
-        status_code = 200 if health_status["status"] == "healthy" else 503
-        return JSONResponse(content=health_status, status_code=status_code)
+        return parser.parse(file_path)
+    
+    def _analyze_associations(self, parsed_content: ParsedContent) -> List[Dict[str, Any]]:
+        """分析圖文關聯關係"""
         
-    except Exception as e:
-        logger.error(f"健康檢查失敗: {e}")
-        return JSONResponse(
-            content={
-                "status": "unhealthy",
-                "error": str(e)
-            },
-            status_code=503
+        associations = []
+        
+        for text_block in parsed_content.text_blocks:
+            for image in parsed_content.images:
+                try:
+                    # 執行多層次關聯分析
+                    association_result = self._perform_association_analysis(
+                        text_block, image
+                    )
+                    
+                    # 只保留高於閾值的關聯
+                    threshold = self.settings.association.min_association_score
+                    if association_result["final_score"] >= threshold:
+                        associations.append(association_result)
+                        
+                except Exception as e:
+                    logger.warning(f"關聯分析失敗 - 文本塊: {text_block.id}, 圖片: {image.id}, 錯誤: {e}")
+        
+        # 按關聯度排序
+        associations.sort(key=lambda x: x["final_score"], reverse=True)
+        
+        return associations
+    
+    def _perform_association_analysis(self, text_block, image) -> Dict[str, Any]:
+        """執行單個文本塊和圖片的關聯分析"""
+        
+        # 1. Caption檢測
+        caption_score = self.caption_detector.detect_caption_relationship(
+            image.__dict__, text_block.__dict__
         )
-
-@app.get("/info")
-async def system_info() -> Dict[str, Any]:
-    """系統信息端點"""
-    from src.config import get_config_summary
+        
+        # 2. 空間關係分析
+        spatial_analysis = self.spatial_analyzer.analyze_spatial_relationship(
+            text_block.__dict__, image.__dict__
+        )
+        
+        # 3. 語義相似度分析
+        semantic_score = self.semantic_analyzer.calculate_semantic_similarity(
+            text_block.content, 
+            image.alt_text or f"Image {image.id}"
+        )
+        
+        # 4. 綜合評分
+        final_score, details = self.association_scorer.calculate_simple_score(
+            caption_score=caption_score,
+            spatial_score=spatial_analysis.get("overall_score", 0.0),
+            semantic_score=semantic_score,
+            layout_score=spatial_analysis.get("layout_score", 0.0),
+            proximity_score=spatial_analysis.get("proximity_score", 0.0)
+        )
+        
+        return {
+            "text_block_id": text_block.id,
+            "image_id": image.id,
+            "final_score": final_score,
+            "caption_score": caption_score,
+            "spatial_score": spatial_analysis.get("overall_score", 0.0),
+            "semantic_score": semantic_score,
+            "layout_score": spatial_analysis.get("layout_score", 0.0),
+            "proximity_score": spatial_analysis.get("proximity_score", 0.0),
+            "spatial_relation": spatial_analysis.get("relation_type", "unknown"),
+            "association_type": "caption" if caption_score > 0.5 else "spatial",
+            "details": details
+        }
     
-    try:
-        config_summary = get_config_summary()
-        project_info = get_project_info()
+    def _generate_markdown(
+        self, 
+        parsed_content: ParsedContent, 
+        associations: List[Dict[str, Any]],
+        template_name: str
+    ) -> str:
+        """生成Markdown內容"""
+        
+        return self.markdown_generator.generate(
+            parsed_content=parsed_content,
+            associations=associations,
+            template_name=template_name,
+            include_metadata=True
+        )
+    
+    def _save_results(
+        self,
+        parsed_content: ParsedContent,
+        associations: List[Dict[str, Any]],
+        markdown_content: str,
+        output_dir: Optional[str],
+        save_associations: bool
+    ) -> Dict[str, str]:
+        """保存處理結果"""
+        
+        if not output_dir:
+            output_dir = "./output"
+        
+        ensure_directory_exists(output_dir)
+        
+        # 生成文件名
+        base_name = Path(parsed_content.metadata.filename).stem
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        output_files = {}
+        
+        # 保存Markdown文件
+        markdown_path = Path(output_dir) / f"{base_name}_{timestamp}.md"
+        with open(markdown_path, 'w', encoding='utf-8') as f:
+            f.write(markdown_content)
+        output_files["markdown"] = str(markdown_path)
+        
+        # 保存關聯分析結果
+        if save_associations:
+            import json
+            associations_path = Path(output_dir) / f"{base_name}_{timestamp}_associations.json"
+            with open(associations_path, 'w', encoding='utf-8') as f:
+                json.dump(associations, f, ensure_ascii=False, indent=2)
+            output_files["associations"] = str(associations_path)
+        
+        return output_files
+    
+    def _collect_statistics(
+        self,
+        parsed_content: ParsedContent,
+        associations: List[Dict[str, Any]],
+        processing_time: float
+    ) -> Dict[str, Any]:
+        """收集處理統計信息"""
+        
+        # 計算關聯統計
+        high_quality_associations = [
+            a for a in associations if a["final_score"] >= 0.7
+        ]
+        
+        caption_associations = [
+            a for a in associations if a["association_type"] == "caption"
+        ]
         
         return {
-            "project": project_info,
-            "config": config_summary,
-            "features": {
-                "supported_formats": ["pdf", "docx", "pptx"],
-                "output_format": "markdown",
-                "association_analysis": True,
-                "spatial_analysis": True,
-                "caption_detection": True,
-                "semantic_analysis": True
-            },
-            "algorithms": {
-                "allen_logic": "13種空間關係",
-                "caption_detection": "正則表達式 + 位置分析",
-                "association_scoring": "5項加權融合模型",
-                "pdf_parsing": "PyMuPDF + pymupdf4llm + unstructured"
-            }
+            "processing_time": processing_time,
+            "total_text_blocks": len(parsed_content.text_blocks),
+            "total_images": len(parsed_content.images),
+            "total_tables": len(parsed_content.tables),
+            "total_associations": len(associations),
+            "high_quality_associations": len(high_quality_associations),
+            "caption_associations": len(caption_associations),
+            "average_association_score": (
+                sum(a["final_score"] for a in associations) / len(associations)
+                if associations else 0.0
+            ),
+            "performance_metrics": self.performance_logger.get_summary()
         }
-        
-    except Exception as e:
-        logger.error(f"獲取系統信息失敗: {e}")
-        raise HTTPException(status_code=500, detail="無法獲取系統信息")
 
-@app.get("/metrics")
-async def metrics() -> Dict[str, Any]:
-    """監控指標端點"""
-    try:
-        import psutil
-        import time
-        
-        # 系統資源指標
-        cpu_usage = psutil.cpu_percent(interval=1)
-        memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
-        
-        return {
-            "timestamp": time.time(),
-            "system": {
-                "cpu_usage_percent": cpu_usage,
-                "memory_usage_percent": memory.percent,
-                "memory_available_mb": memory.available // 1024 // 1024,
-                "disk_usage_percent": disk.percent,
-                "disk_free_gb": disk.free // 1024 // 1024 // 1024
-            },
-            "application": {
-                "status": "running",
-                "version": settings.app.version,
-                "environment": settings.app.environment,
-                "debug_mode": settings.app.debug
-            }
-        }
-        
-    except ImportError:
-        # 如果psutil不可用，返回基本信息
-        return {
-            "timestamp": asyncio.get_event_loop().time(),
-            "application": {
-                "status": "running",
-                "version": settings.app.version,
-                "environment": settings.app.environment
-            },
-            "note": "詳細系統指標需要安裝psutil"
-        }
-    except Exception as e:
-        logger.error(f"獲取監控指標失敗: {e}")
-        raise HTTPException(status_code=500, detail="無法獲取監控指標")
-
-# 註冊API路由（當其他模組完成後會添加）
-# TODO: 當API模組完成後，在這裡註冊路由
-# from src.api.routes import upload, process, download
-# app.include_router(upload.router, prefix="/api/v1", tags=["upload"])
-# app.include_router(process.router, prefix="/api/v1", tags=["process"])
-# app.include_router(download.router, prefix="/api/v1", tags=["download"])
 
 def main():
-    """主函數 - 啟動應用"""
-    logger.info(f"🌟 啟動 {settings.app.name} v{settings.app.version}")
-    logger.info(f"📍 環境: {settings.app.environment}")
-    logger.info(f"🔧 調試模式: {settings.app.debug}")
-    logger.info(f"🌐 監聽: {settings.api.host}:{settings.api.port}")
+    """主函數 - 命令行界面"""
     
-    # 啟動服務器
-    uvicorn.run(
-        "src.main:app",
-        host=settings.api.host,
-        port=settings.api.port,
-        workers=settings.api.workers if not settings.app.debug else 1,
-        reload=settings.api.reload and settings.app.debug,
-        log_level=settings.logging.level.lower(),
-        access_log=settings.app.debug,
-        loop="asyncio"
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description="智能文件轉換與RAG知識庫系統"
     )
+    
+    parser.add_argument(
+        "input_file",
+        help="輸入文件路徑"
+    )
+    
+    parser.add_argument(
+        "-o", "--output",
+        help="輸出目錄",
+        default="./output"
+    )
+    
+    parser.add_argument(
+        "-t", "--template",
+        help="使用的模板",
+        choices=["basic.md.j2", "enhanced.md.j2"],
+        default="enhanced.md.j2"
+    )
+    
+    parser.add_argument(
+        "--no-associations",
+        action="store_true",
+        help="不保存關聯分析結果"
+    )
+    
+    args = parser.parse_args()
+    
+    try:
+        processor = DocumentProcessor()
+        
+        result = processor.process_document(
+            file_path=args.input_file,
+            output_dir=args.output,
+            template_name=args.template,
+            save_associations=not args.no_associations
+        )
+        
+        if result["success"]:
+            print("✅ 處理成功！")
+            print(f"📊 統計信息:")
+            stats = result["statistics"]
+            print(f"  - 處理時間: {stats['processing_time']:.2f}秒")
+            print(f"  - 文本塊: {stats['total_text_blocks']}")
+            print(f"  - 圖片: {stats['total_images']}")
+            print(f"  - 關聯關係: {stats['total_associations']}")
+            print(f"  - 高質量關聯: {stats['high_quality_associations']}")
+            
+            print(f"📁 輸出文件:")
+            for file_type, file_path in result["output_files"].items():
+                print(f"  - {file_type}: {file_path}")
+        else:
+            print(f"❌ 處理失敗: {result['error']}")
+            return 1
+    
+    except Exception as e:
+        logger.error(f"主程序執行失敗: {e}")
+        print(f"❌ 執行失敗: {e}")
+        return 1
+    
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    exit(main())

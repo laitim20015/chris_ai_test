@@ -12,9 +12,11 @@ Logging Configuration Module
 
 import sys
 import json
+import time
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 from datetime import datetime
+from contextlib import contextmanager
 from loguru import logger
 from src.config.settings import get_settings, LoggingSettings
 
@@ -191,6 +193,34 @@ class PerformanceLogger:
             logger_name: 日誌記錄器名稱
         """
         self.logger = ContextLogger(logger_name)
+        self._measurements = {}
+    
+    @contextmanager
+    def measure(self, operation_name: str, **kwargs):
+        """
+        性能測量上下文管理器
+        
+        Args:
+            operation_name: 操作名稱
+            **kwargs: 額外參數
+        """
+        start_time = time.time()
+        try:
+            yield
+        finally:
+            duration = time.time() - start_time
+            self._measurements[operation_name] = duration
+            self.logger.info(
+                f"Operation '{operation_name}' completed",
+                operation_name=operation_name,
+                duration_seconds=duration,
+                duration_ms=duration * 1000,
+                **kwargs
+            )
+    
+    def get_summary(self) -> Dict[str, float]:
+        """獲取性能測量摘要"""
+        return self._measurements.copy()
     
     def log_function_performance(self, func_name: str, duration: float, **kwargs) -> None:
         """

@@ -492,3 +492,4 @@ def quick_spatial_analysis(text_box: BoundingBox, image_box: BoundingBox) -> Spa
     """快速空間關係分析"""
     analyzer = AllenLogicAnalyzer()
     return analyzer.analyze_spatial_relation(text_box, image_box)
+

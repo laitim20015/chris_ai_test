@@ -25,6 +25,52 @@ from src.config.logging_config import get_logger, log_performance
 
 logger = get_logger("file_utils")
 
+def ensure_directory_exists(directory_path: Union[str, Path]) -> None:
+    """
+    確保目錄存在，如果不存在則創建
+    
+    Args:
+        directory_path: 目錄路徑
+    """
+    path = Path(directory_path)
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"目錄已確保存在: {path}")
+    except Exception as e:
+        logger.error(f"創建目錄失敗: {path}, 錯誤: {e}")
+        raise
+
+def get_file_hash(file_path: Union[str, Path], algorithm: str = "md5") -> str:
+    """
+    計算文件哈希值
+    
+    Args:
+        file_path: 文件路徑
+        algorithm: 哈希算法 (md5, sha1, sha256)
+        
+    Returns:
+        str: 文件哈希值
+    """
+    path = Path(file_path)
+    
+    if not path.exists():
+        raise FileNotFoundError(f"文件不存在: {path}")
+    
+    hash_obj = hashlib.new(algorithm.lower())
+    
+    try:
+        with open(path, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_obj.update(chunk)
+        
+        file_hash = hash_obj.hexdigest()
+        logger.debug(f"文件哈希計算完成: {path}, {algorithm.upper()}: {file_hash}")
+        return file_hash
+        
+    except Exception as e:
+        logger.error(f"計算文件哈希失敗: {path}, 錯誤: {e}")
+        raise
+
 class FileManager:
     """文件管理器類"""
     
@@ -466,3 +512,4 @@ def get_file_manager() -> FileManager:
     if _global_file_manager is None:
         _global_file_manager = FileManager()
     return _global_file_manager
+

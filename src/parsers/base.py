@@ -535,3 +535,4 @@ def generate_content_id(content_type: str, page: int, index: int) -> str:
         str: 生成的ID
     """
     return f"{content_type}_{page:03d}_{index:03d}"
+

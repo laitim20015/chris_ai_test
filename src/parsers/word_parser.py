@@ -333,3 +333,4 @@ def extract_word_tables(file_path: Union[str, Path]) -> List[TableContent]:
     parser = WordParser()
     result = parser.parse(file_path)
     return result.tables if result.success else []
+

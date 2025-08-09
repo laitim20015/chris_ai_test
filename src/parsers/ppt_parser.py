@@ -410,3 +410,4 @@ def extract_ppt_images(file_path: Union[str, Path]) -> List[ImageContent]:
     parser = PowerPointParser()
     result = parser.parse(file_path)
     return result.images if result.success else []
+

@@ -488,3 +488,4 @@ def get_text_processor() -> TextProcessor:
     if _global_processor is None:
         _global_processor = TextProcessor()
     return _global_processor
+

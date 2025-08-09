@@ -494,3 +494,4 @@ def get_image_processor() -> ImageProcessor:
     if _global_processor is None:
         _global_processor = ImageProcessor()
     return _global_processor
+

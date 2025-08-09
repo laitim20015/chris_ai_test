@@ -180,6 +180,53 @@ class AssociationScorer:
         
         return result
     
+    def calculate_simple_score(self, 
+                             caption_score: float = 0.0,
+                             spatial_score: float = 0.0, 
+                             semantic_score: float = 0.0,
+                             layout_score: float = 0.0,
+                             proximity_score: float = 0.0) -> Tuple[float, Dict]:
+        """
+        簡化的評分計算方法（用於測試和快速評分）
+        
+        Args:
+            caption_score: Caption檢測評分
+            spatial_score: 空間關係評分
+            semantic_score: 語義相似度評分
+            layout_score: 佈局模式評分
+            proximity_score: 距離評分
+            
+        Returns:
+            Tuple[float, Dict]: (最終評分, 詳細信息)
+        """
+        weights = self.weights
+        
+        final_score = (
+            weights.caption_weight * caption_score +
+            weights.spatial_weight * spatial_score +
+            weights.semantic_weight * semantic_score +
+            weights.layout_weight * layout_score +
+            weights.proximity_weight * proximity_score
+        )
+        
+        details = {
+            "caption_score": caption_score,
+            "spatial_score": spatial_score,
+            "semantic_score": semantic_score,
+            "layout_score": layout_score,
+            "proximity_score": proximity_score,
+            "weights": {
+                "caption": weights.caption_weight,
+                "spatial": weights.spatial_weight,
+                "semantic": weights.semantic_weight,
+                "layout": weights.layout_weight,
+                "proximity": weights.proximity_weight
+            },
+            "final_score": final_score
+        }
+        
+        return final_score, details
+    
     def _calculate_caption_score(self, caption_matches: List[CaptionMatch]) -> float:
         """計算Caption評分（40%權重）"""
         if not caption_matches:
@@ -434,3 +481,4 @@ def quick_association_score(caption_score: float, spatial_score: float,
     )
     
     return min(1.0, final_score)
+

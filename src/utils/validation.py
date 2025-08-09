@@ -475,6 +475,64 @@ def validate_parser_config(config: Dict[str, Any]) -> Tuple[bool, str]:
     
     return True, ""
 
+def validate_markdown_output(markdown_content: str) -> bool:
+    """
+    驗證Markdown輸出的基本格式
+    
+    Args:
+        markdown_content: Markdown內容
+        
+    Returns:
+        bool: 是否是有效的Markdown
+    """
+    if not markdown_content or not isinstance(markdown_content, str):
+        logger.warning("Markdown內容為空或不是字符串")
+        return False
+    
+    # 基本格式檢查
+    try:
+        # 檢查是否包含基本的Markdown元素
+        lines = markdown_content.split('\n')
+        
+        # 至少應該有標題
+        has_heading = any(line.strip().startswith('#') for line in lines)
+        if not has_heading:
+            logger.debug("Markdown缺少標題")
+            # 不算錯誤，只是建議
+        
+        # 檢查圖片語法格式
+        img_pattern = r'!\[([^\]]*)\]\(([^)]+)\)'
+        img_matches = re.findall(img_pattern, markdown_content)
+        
+        # 驗證圖片URL格式
+        for alt_text, img_url in img_matches:
+            if not img_url.strip():
+                logger.warning("發現空的圖片URL")
+                return False
+        
+        # 檢查表格格式
+        table_lines = [line for line in lines if '|' in line]
+        if table_lines:
+            # 簡單檢查表格格式
+            for line in table_lines:
+                if line.strip().startswith('|') and line.strip().endswith('|'):
+                    continue  # 正確格式
+                elif '|' in line:
+                    continue  # 部分正確格式也可接受
+        
+        # 檢查是否有無效的控制字符
+        control_chars = re.findall(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', markdown_content)
+        if control_chars:
+            logger.warning(f"Markdown包含控制字符: {len(control_chars)} 個")
+            return False
+        
+        logger.debug("Markdown格式驗證通過")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Markdown驗證過程出錯: {e}")
+        return False
+
 # 全局驗證器實例
 _global_validator: Optional[DataValidator] = None
 
@@ -489,3 +547,4 @@ def get_validator() -> DataValidator:
     if _global_validator is None:
         _global_validator = DataValidator()
     return _global_validator
+

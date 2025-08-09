@@ -152,3 +152,4 @@ def calculate_semantic_score(similarity: SemanticSimilarity, weight_semantic: fl
     """
     base_score = similarity.similarity_score * similarity.confidence
     return base_score * weight_semantic
+

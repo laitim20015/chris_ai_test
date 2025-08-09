@@ -1,0 +1,42 @@
+# {{ document.metadata.filename }}
+
+{% if metadata %}
+---
+{{ metadata.to_yaml_frontmatter() }}
+---
+{% endif %}
+
+## 文檔信息
+- **原始文件**: {{ document.metadata.filename }}
+- **頁數**: {{ document.metadata.page_count }}
+- **圖片數量**: {{ document.images|length }}
+- **處理時間**: {{ generation_time.strftime('%Y-%m-%d %H:%M:%S') }}
+
+## 內容
+
+{% for block_data in text_blocks_with_images %}
+{{ block_data.text_block.content }}
+
+{% for image_data in block_data.related_images %}
+![{{ image_data.image.alt_text or 'Image' }}](./images/{{ image_data.image.filename or (image_data.image.id + '.png') }})
+*關聯度: {{ "%.3f"|format(image_data.association.score) }}*
+
+{% endfor %}
+{% endfor %}
+
+{% if tables %}
+## 表格
+
+{% for table in tables %}
+### 表格 {{ loop.index }}
+
+{% if table.headers %}
+| {{ table.headers|join(' | ') }} |
+|{{ table.headers|map('replace', table.headers[0], ' --- ')|join('|') }}|
+{% for row in table.rows[:10] %}
+| {{ row|join(' | ') }} |
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}

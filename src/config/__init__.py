@@ -168,3 +168,4 @@ def get_config_summary() -> dict:
 _config_valid = validate_config()
 if not _config_valid:
     raise RuntimeError("系統配置驗證失敗，請檢查配置文件和環境變量")
+

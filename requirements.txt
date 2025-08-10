@@ -30,10 +30,11 @@ sentence-transformers>=2.2.2       # 文本向量化
 torch>=2.0.0                       # PyTorch後端
 transformers>=4.30.0               # Transformer模型
 
-# ====== Azure OpenAI 集成 ======
+# ====== Azure OpenAI 和知識庫集成 ======
 openai>=1.0.0                      # OpenAI Python SDK (支援Azure)
 azure-identity>=1.15.0             # Azure身份驗證
 azure-core>=1.29.0                 # Azure核心庫
+azure-search-documents>=11.4.0     # Azure AI Search SDK
 tiktoken>=0.5.0                     # Token計算工具
 
 # ====== 空間分析和關聯算法 ======
@@ -49,7 +50,6 @@ pydantic-settings>=2.0.0           # 配置管理
 
 # ====== HTTP客戶端和限流 ======
 aiohttp>=3.8.0                     # 異步HTTP客戶端（知識庫適配器用）
-aioredis>=2.0.0                    # 異步Redis客戶端（限流用）
 
 # ====== 文件處理和I/O ======
 aiofiles>=23.2.0                   # 異步文件操作
@@ -63,9 +63,10 @@ markdown>=3.5.0                    # Markdown處理
 redis>=4.6.0                       # 緩存系統
 sqlalchemy>=2.0.0                  # ORM框架
 
-# ====== 日誌和監控 ======
+# ====== 系統監控和性能 ======
 loguru>=0.7.0                      # 現代日誌系統
 prometheus-client>=0.17.0          # 監控指標
+psutil>=5.9.0                      # 系統資源監控（性能基準測試用）
 
 # ====== 測試框架 ======
 pytest>=7.4.0                      # 測試框架
@@ -110,7 +111,11 @@ python-magic>=0.4.27               # 文件類型檢測
 #
 # 新增項目：
 # - aiohttp (知識庫適配器需要)
-# - aioredis (限流中間件Redis支持)
+# - psutil (性能基準測試需要)
+# - azure-search-documents (Azure知識庫適配器需要)
+#
+# 移除項目：
+# - aioredis (重複，redis已提供異步客戶端)
 
 # 版本要求說明：
 # - Python >= 3.9 (推薦 3.11)

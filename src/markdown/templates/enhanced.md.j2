@@ -30,7 +30,7 @@
 {% for image_data in block_data.related_images %}
 <div class="image-association">
 
-![{{ image_data.image.alt_text or 'Image' }}](./images/{{ image_data.image.filename or (image_data.image.id + '.png') }})
+![{{ image_data.image.alt_text or 'Image' }}]({{ image_data.image.url or ('./images/' ~ (image_data.image.filename or (image_data.image.id ~ '.png'))) }})
 
 **圖片信息:**
 - 🎯 關聯度: {{ "%.3f"|format(image_data.association.score) }}

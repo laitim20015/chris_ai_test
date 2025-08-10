@@ -34,6 +34,7 @@ from src.association.caption_detector import CaptionDetector
 from src.association.spatial_analyzer import SpatialAnalyzer
 from src.association.semantic_analyzer import SemanticAnalyzer
 from src.association.association_scorer import AssociationScorer
+from src.association.association_optimizer import AssociationOptimizer, create_balanced_config
 from src.markdown.generator import MarkdownGenerator
 from src.utils.validation import validate_markdown_output
 
@@ -258,6 +259,9 @@ class CompleteEndToEndTest:
             semantic_analyzer = SemanticAnalyzer()
             association_scorer = AssociationScorer()
             
+            # 初始化關聯優化器
+            association_optimizer = AssociationOptimizer(create_balanced_config())
+            
             associations = []
             
             if not parsed_content.images or not parsed_content.text_blocks:
@@ -303,24 +307,45 @@ class CompleteEndToEndTest:
                         f"圖片位於頁面{image.page_number}"  # 簡化的圖片描述
                     )
                     
-                    # 計算總關聯度
+                    # 計算完整5維度評分 - 使用動態歸一化
+                    if spatial_features:
+                        # 估算頁面尺寸（使用所有元素的最大座標）
+                        page_width = max(text_block.bbox.right, image.bbox.right)
+                        page_height = max(text_block.bbox.bottom, image.bbox.bottom)
+                        page_diagonal = (page_width ** 2 + page_height ** 2) ** 0.5
+                        
+                        # 使用頁面對角線的比例作為歸一化基準
+                        # 對角線的30%作為"近距離"，50%作為"中距離"
+                        spatial_score = 1.0 - min(spatial_features.center_distance / (page_diagonal * 0.5), 1.0)
+                        proximity_score = 1.0 - min(spatial_features.min_distance / (page_diagonal * 0.3), 1.0)
+                        layout_score = spatial_features.alignment_score
+                    else:
+                        spatial_score = 0.0
+                        proximity_score = 0.0
+                        layout_score = 0.0
+                    
                     score_result = await asyncio.to_thread(
                         association_scorer.calculate_simple_score,
                         caption_score=caption_score,
-                        spatial_score=1.0 - min(spatial_features.center_distance / 1000.0, 1.0) if spatial_features else 0.0,
-                        semantic_score=semantic_score
+                        spatial_score=spatial_score,
+                        semantic_score=semantic_score,
+                        layout_score=layout_score,      # 新增佈局評分
+                        proximity_score=proximity_score  # 新增距離評分
                     )
                     final_score, score_details = score_result
                     
-                    # 如果關聯度足夠高，記錄關聯
-                    if final_score > 0.3:  # 閾值可調整
+                    # 使用配置化閾值判斷關聯
+                    threshold = self.settings.association.min_association_score
+                    if final_score > threshold:
                         association = {
                             "text_block_id": text_block.id,
                             "image_id": image.id,
                             "final_score": final_score,
                             "caption_score": caption_score,
-                            "spatial_score": 1.0 - min(spatial_features.center_distance / 1000.0, 1.0) if spatial_features else 0.0,
+                            "spatial_score": spatial_score,
                             "semantic_score": semantic_score,
+                            "layout_score": layout_score,      # 新增佈局評分
+                            "proximity_score": proximity_score, # 新增距離評分
                             "text_preview": text_block.content[:100] + "..." if len(text_block.content) > 100 else text_block.content
                         }
                         
@@ -328,8 +353,8 @@ class CompleteEndToEndTest:
                         total_associations += 1
                         
                         self.logger.info(f"  🎯 找到關聯 (分數: {final_score:.3f})")
-                        spatial_score = 1.0 - min(spatial_features.center_distance / 1000.0, 1.0) if spatial_features else 0.0
                         self.logger.info(f"     Caption: {caption_score:.3f} | 空間: {spatial_score:.3f} | 語義: {semantic_score:.3f}")
+                        self.logger.info(f"     佈局: {layout_score:.3f} | 距離: {proximity_score:.3f}")
                         self.logger.info(f"     文本預覽: {association['text_preview']}")
                 
                 if image_associations:
@@ -340,6 +365,21 @@ class CompleteEndToEndTest:
                     self.logger.info(f"  ✅ 圖片關聯完成: 找到 {len(image_associations)} 個關聯")
                 else:
                     self.logger.info(f"  ⚠️ 圖片未找到高質量關聯")
+            
+            # 🔧 關聯優化 - 去重、過濾和質量提升
+            self.logger.info(f"🔧 開始關聯優化 - 原始關聯數: {len(associations)}")
+            optimized_associations = await asyncio.to_thread(
+                association_optimizer.optimize_associations,
+                associations,
+                parsed_content.images,
+                parsed_content.text_blocks
+            )
+            self.logger.info(f"關聯優化完成 - 優化後關聯數: {len(optimized_associations)}")
+            reduction_rate = ((len(associations) - len(optimized_associations)) / len(associations) * 100) if associations else 0
+            self.logger.info(f"關聯減少率: {reduction_rate:.1f}%")
+            
+            # 使用優化後的關聯
+            associations = optimized_associations
             
             # 記錄性能指標
             processing_time = (datetime.now() - start_time).total_seconds()

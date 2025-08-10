@@ -2,9 +2,9 @@
 
 
 ---
-document_id: doc_20250810_020816
+document_id: doc_20250810_022300
 original_filename: Workflows-sample.pdf
-created_at: 2025-08-10T02:08:16.507112
+created_at: 2025-08-10T02:23:00.218723
 processing_time: 0.00s
 total_pages: 23
 total_images: 7
@@ -22,7 +22,7 @@ version: 1.0
 | 📊 頁數 | 23 |
 | 🖼️ 圖片數量 | 7 |
 | 🔗 關聯數量 | 35 |
-| ⏱️ 處理時間 | 2025-08-10 02:08:16 |
+| ⏱️ 處理時間 | 2025-08-10 02:23:00 |
 
 ---
 
@@ -152,6 +152,22 @@ PPML 拼版工作流程
 
 使用 PPML 搭配拼版列印範例卡片
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_005.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.685
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -470,6 +486,34 @@ Mixed Media 讓您能夠將不同範圍的頁面列印在不同類型的媒體�
 之相關資訊。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.691
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_002.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.660
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -536,6 +580,22 @@ WorkStation 工作中移除點陣資訊，請在檔案上按一下滑鼠右鍵�
 ### 段落 55
 
 下圖顯示範例書籍的各個部分。
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_014_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.781
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -637,6 +697,22 @@ Geology
 ### 段落 66
 
 使用 Mixed Media 列印範例書籍
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_014_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.793
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -974,6 +1050,22 @@ Mixed Media 工作流程
 的頁面上為 25 張卡片進行拼版。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_005.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.694
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -1114,22 +1206,6 @@ Command WorkStation 與 Fiery Impose (需要授權)
 11 x 17 重磅紙，如卡片紙張
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p011_img001_aa542fa9.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.786
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -1170,22 +1246,6 @@ Command WorkStation 與 Fiery Impose (需要授權)
 選擇聯合拼版，然後選擇重複。
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p011_img001_aa542fa9.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.779
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -1203,6 +1263,22 @@ Command WorkStation 與 Fiery Impose (需要授權)
 ### 段落 122
 
 • 指定 11x17 的頁面大小、橫向方向和雙面列印。
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_004.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.727
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -1270,22 +1346,6 @@ Command WorkStation 與 Fiery Impose (需要授權)
 
 9
 遵循印表機的標記來裁切卡片。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p011_img001_aa542fa9.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.786
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -1362,6 +1422,34 @@ PPML 是一種以 XML 為基礎的變數資料列印語言，透過允許印表�
 裁切與堆疊列印的工作。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_002.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.659
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_003.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.644
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -1400,6 +1488,22 @@ PPML 是一種以 XML 為基礎的變數資料列印語言，透過允許印表�
 中建立了合併的主元素與變數文件，以建立 PPML 檔案。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_005.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.691
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -1415,11 +1519,11 @@ PPML 是一種以 XML 為基礎的變數資料列印語言，透過允許印表�
 
 <div class="image-association">
 
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p011_img001_aa542fa9.png)
+![Image](./images/page_017_image_005.png)
 
 **圖片信息:**
-- 🎯 關聯度: 0.797
-- 📍 關聯類型: spatial
+- 🎯 關聯度: 0.679
+- 📍 關聯類型: caption
 - 🔍 Caption檢測: ✅
 
 </div>
@@ -1433,22 +1537,6 @@ PPML 是一種以 XML 為基礎的變數資料列印語言，透過允許印表�
 ### 段落 143
 
 下列圖表描述了工作拼版與分類的方式。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p011_img001_aa542fa9.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.789
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -1576,6 +1664,22 @@ Command WorkStation 與 Fiery Impose
 按一下動作 > Impose，然後選擇聯合拼版與剪下並堆疊。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_004.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.733
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -1593,6 +1697,22 @@ Command WorkStation 與 Fiery Impose
 ### 段落 158
 
 • 指定 11x17 的頁面大小、橫向方向和雙面列印。
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_004.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.739
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -1746,6 +1866,34 @@ PPML 拼版工作流程
 動程式指定主元素與變數資料。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_002.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.661
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_003.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.643
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -1775,22 +1923,6 @@ FreeForm 讓您使用列印選項來定義主元素文件 (稱為 FreeForm 主�
 這裡是一些適用於此工作流程的限制：
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p014_img002_fcad1d8f.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.801
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -1799,22 +1931,6 @@ FreeForm 讓您使用列印選項來定義主元素文件 (稱為 FreeForm 主�
 
 •
 您不能將 FreeForm 工作送至「直接」連線。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p014_img002_fcad1d8f.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.800
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -1852,11 +1968,11 @@ FreeForm 讓您使用列印選項來定義主元素文件 (稱為 FreeForm 主�
 
 <div class="image-association">
 
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p014_img002_fcad1d8f.png)
+![Image](./images/page_014_image_000.png)
 
 **圖片信息:**
-- 🎯 關聯度: 0.835
-- 📍 關聯類型: spatial
+- 🎯 關聯度: 0.790
+- 📍 關聯類型: caption
 - 🔍 Caption檢測: ✅
 
 </div>
@@ -1870,22 +1986,6 @@ FreeForm 讓您使用列印選項來定義主元素文件 (稱為 FreeForm 主�
 ### 段落 182
 
 例如列印包含某學校資訊的郵寄廣告。郵寄廣告包含已付郵資的商務回函，整合在郵寄廣告中。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p014_img002_fcad1d8f.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.801
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -2080,6 +2180,22 @@ Adobe Acrobat、Microsoft Word 和 Microsoft Excel
 在 Adobe Acrobat 中開啟主元素文件。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_011_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.748
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -2127,22 +2243,6 @@ Adobe Acrobat、Microsoft Word 和 Microsoft Excel
 在印表機驅動程式中，指定 11 x 17 頁面大小及雙面列印，並針對建立主元素選擇 1。
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p014_img002_fcad1d8f.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.794
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2184,6 +2284,46 @@ Adobe Acrobat、Microsoft Word 和 Microsoft Excel
 素選擇 1。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.680
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_002.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.664
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_003.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.652
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -2221,22 +2361,6 @@ Adobe Acrobat、Microsoft Word 和 Microsoft Excel
 作流程
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img003_ff58f350.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.683
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2252,11 +2376,11 @@ FreeForm 2 擴充了 FreeForm 的功能將 FreeForm 2 搭配相容的第三方�
 
 <div class="image-association">
 
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img003_ff58f350.png)
+![Image](./images/page_017_image_000.png)
 
 **圖片信息:**
-- 🎯 關聯度: 0.710
-- 📍 關聯類型: spatial
+- 🎯 關聯度: 0.680
+- 📍 關聯類型: caption
 - 🔍 Caption檢測: ✅
 
 </div>
@@ -2278,47 +2402,11 @@ FreeForm 2 擴充了 FreeForm 的功能將 FreeForm 2 搭配相容的第三方�
 
 <div class="image-association">
 
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img007_50bf95e2.png)
+![Image](./images/page_017_image_003.png)
 
 **圖片信息:**
-- 🎯 關聯度: 0.692
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img003_ff58f350.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.700
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img004_f4722c73.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.696
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img005_521d7f04.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.678
-- 📍 關聯類型: spatial
+- 🎯 關聯度: 0.644
+- 📍 關聯類型: caption
 - 🔍 Caption檢測: ✅
 
 </div>
@@ -2332,34 +2420,6 @@ FreeForm 2 擴充了 FreeForm 的功能將 FreeForm 2 搭配相容的第三方�
 ### 段落 218
 
 多頁的主文件讓您能夠在於同一個變數資訊資料庫中繪製時，為工作定義超過一個主文件檔案。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img003_ff58f350.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.679
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img004_f4722c73.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.691
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -2396,35 +2456,11 @@ Mixed Media，請參閱《公用程式》。若要判定您的印表機是否支
 
 <div class="image-association">
 
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img007_50bf95e2.png)
+![Image](./images/page_017_image_005.png)
 
 **圖片信息:**
-- 🎯 關聯度: 0.737
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img004_f4722c73.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.674
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img005_521d7f04.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.641
-- 📍 關聯類型: spatial
+- 🎯 關聯度: 0.683
+- 📍 關聯類型: caption
 - 🔍 Caption檢測: ✅
 
 </div>
@@ -2441,34 +2477,6 @@ Mixed Media，請參閱《公用程式》。若要判定您的印表機是否支
 廣告及為所有男孩的父母建立郵寄廣告。郵寄廣告上呈現目標年齡兒童的影像。
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img007_50bf95e2.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.727
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img004_f4722c73.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.657
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2477,34 +2485,6 @@ Mixed Media，請參閱《公用程式》。若要判定您的印表機是否支
 
 每份郵寄廣告上都有客戶姓名與折價券的封面頁。針對女孩父母的郵寄廣告上，包含女孩衣物廣告的額外頁
 面。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img007_50bf95e2.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.720
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img004_f4722c73.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.652
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -2521,11 +2501,11 @@ Mixed Media，請參閱《公用程式》。若要判定您的印表機是否支
 
 <div class="image-association">
 
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img007_50bf95e2.png)
+![Image](./images/page_014_image_000.png)
 
 **圖片信息:**
-- 🎯 關聯度: 0.685
-- 📍 關聯類型: spatial
+- 🎯 關聯度: 0.769
+- 📍 關聯類型: caption
 - 🔍 Caption檢測: ✅
 
 </div>
@@ -2550,22 +2530,6 @@ Mixed Media，請參閱《公用程式》。若要判定您的印表機是否支
 下圖顯示郵寄廣告的各部分：
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img006_83ce5bca.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.706
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2582,22 +2546,6 @@ Mixed Media，請參閱《公用程式》。若要判定您的印表機是否支
 ### 段落 228
 
 使用 FreeForm 2 與 Mixed Media 的 VDP 工作流程
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img005_521d7f04.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.616
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -2712,6 +2660,22 @@ FreeForm 2
 內含 主元素與變數資料的 .psm 檔案
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_011_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.790
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -2778,34 +2742,6 @@ Command WorkStation 與 Mixed Media
 ### 段落 247
 
 使用 FreeForm 2 與 Mixed Media 的 VDP 工作流程
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img003_ff58f350.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.647
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img005_521d7f04.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.616
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -2886,22 +2822,6 @@ Fiery Server 接收到主元素及變數 PostScript 檔案。
 指定僅列印於前方的封面、封面紙張以及媒體紙匣。
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img006_83ce5bca.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.750
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2922,22 +2842,6 @@ Fiery Server 接收到主元素及變數 PostScript 檔案。
 處理並保留工作。
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img006_83ce5bca.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.720
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2948,22 +2852,6 @@ Fiery Server 接收到主元素及變數 PostScript 檔案。
 預覽工作。
 
 
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img006_83ce5bca.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.702
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
-
-
 
 ---
 
@@ -2972,22 +2860,6 @@ Fiery Server 接收到主元素及變數 PostScript 檔案。
 
 8
 列印工作。
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img006_83ce5bca.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.697
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -3006,22 +2878,6 @@ Fiery Server 接收到主元素及變數 PostScript 檔案。
 ### 段落 261
 
 使用 FreeForm 2 與 Mixed Media 的 VDP 工作流程
-
-
-#### 📸 相關圖片
-
-
-<div class="image-association">
-
-![Image](http://localhost:8000/images/2025/08/10/workflows_sample_p017_img005_521d7f04.png)
-
-**圖片信息:**
-- 🎯 關聯度: 0.616
-- 📍 關聯類型: spatial
-- 🔍 Caption檢測: ✅
-
-</div>
-
 
 
 
@@ -3060,6 +2916,46 @@ Hot Folders 工作流程
 
 附註：並非所有 Fiery Server 型號都支援 Hot Folders。請參閱《公用程式》來確定您的 Fiery Server 是
 否支援 Hot Folders。
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.689
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_002.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.666
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_003.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.650
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -3152,6 +3048,22 @@ Hot Folders 工作流程
 此範例需要下列項目：
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_011_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.778
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -3219,6 +3131,22 @@ Hot Folder
 11x17 重磅紙，如卡片紙張
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_014_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.773
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -3283,6 +3211,22 @@ Hot Folder
 ### 段落 289
 
 • 在加工標籤中，選擇聯合拼版並選擇重複。
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_004.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.758
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -3448,6 +3392,22 @@ Compose 中檢視工作時出現。
 ### 段落 306
 
 Paper Catalog 概覽
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_011_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.760
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -3622,6 +3582,22 @@ Paper Catalog 允許操作員：
 標籤紙。
 
 
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.677
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
+
+
 
 ---
 
@@ -3649,6 +3625,22 @@ Geology
 
 Geology 
     101
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_017_image_004.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.753
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -3762,6 +3754,22 @@ Command WorkStation 搭配 Fiery Compose 與 Paper Catalog
 
 •
 封面與封底使用的金色封面紙
+
+
+#### 📸 相關圖片
+
+
+<div class="image-association">
+
+![Image](./images/page_011_image_000.png)
+
+**圖片信息:**
+- 🎯 關聯度: 0.780
+- 📍 關聯類型: caption
+- 🔍 Caption檢測: ✅
+
+</div>
+
 
 
 
@@ -4002,75 +4010,75 @@ Command WorkStation 搭配 Fiery Compose 與 Paper Catalog
 | 文本塊 | 圖片 | 關聯度 | 類型 | Caption |
 |--------|------|--------|------|---------|
 
-| text_013_010 | image_014_000 | 0.835 | spatial | ✅ |
+| text_007_007 | image_014_000 | 0.793 | caption | ✅ |
 
-| text_013_011 | image_014_000 | 0.801 | spatial | ✅ |
+| text_013_010 | image_014_000 | 0.790 | caption | ✅ |
 
-| text_013_006 | image_014_000 | 0.801 | spatial | ✅ |
+| text_006_009 | image_014_000 | 0.781 | caption | ✅ |
 
-| text_013_007 | image_014_000 | 0.800 | spatial | ✅ |
+| text_020_001 | image_014_000 | 0.773 | caption | ✅ |
 
-| text_015_000 | image_014_000 | 0.794 | spatial | ✅ |
+| text_016_009 | image_014_000 | 0.769 | caption | ✅ |
 
-| text_011_009 | image_011_000 | 0.797 | spatial | ✅ |
+| text_017_010 | image_011_000 | 0.790 | caption | ✅ |
 
-| text_011_010 | image_011_000 | 0.789 | spatial | ✅ |
+| text_022_018 | image_011_000 | 0.780 | caption | ✅ |
 
-| text_010_019 | image_011_000 | 0.786 | spatial | ✅ |
+| text_019_012 | image_011_000 | 0.778 | caption | ✅ |
 
-| text_010_006 | image_011_000 | 0.786 | spatial | ✅ |
+| text_021_010 | image_011_000 | 0.760 | caption | ✅ |
 
-| text_010_010 | image_011_000 | 0.779 | spatial | ✅ |
+| text_014_011 | image_011_000 | 0.748 | caption | ✅ |
 
-| text_018_006 | image_017_004 | 0.750 | spatial | ✅ |
+| text_020_008 | image_017_004 | 0.758 | caption | ✅ |
 
-| text_018_008 | image_017_004 | 0.720 | spatial | ✅ |
+| text_022_006 | image_017_004 | 0.753 | caption | ✅ |
 
-| text_016_011 | image_017_004 | 0.706 | spatial | ✅ |
+| text_012_011 | image_017_004 | 0.739 | caption | ✅ |
 
-| text_018_009 | image_017_004 | 0.702 | spatial | ✅ |
+| text_012_009 | image_017_004 | 0.733 | caption | ✅ |
 
-| text_018_010 | image_017_004 | 0.697 | spatial | ✅ |
+| text_010_012 | image_017_004 | 0.727 | caption | ✅ |
 
-| text_016_006 | image_017_005 | 0.737 | spatial | ✅ |
+| text_009_007 | image_017_005 | 0.694 | caption | ✅ |
 
-| text_016_007 | image_017_005 | 0.727 | spatial | ✅ |
+| text_011_008 | image_017_005 | 0.691 | caption | ✅ |
 
-| text_016_008 | image_017_005 | 0.720 | spatial | ✅ |
+| text_003_010 | image_017_005 | 0.685 | caption | ✅ |
 
-| text_016_002 | image_017_005 | 0.692 | spatial | ✅ |
+| text_016_006 | image_017_005 | 0.683 | caption | ✅ |
 
-| text_016_009 | image_017_005 | 0.685 | spatial | ✅ |
+| text_011_009 | image_017_005 | 0.679 | caption | ✅ |
 
-| text_016_001 | image_017_000 | 0.710 | spatial | ✅ |
+| text_006_002 | image_017_000 | 0.691 | caption | ✅ |
 
-| text_016_002 | image_017_000 | 0.700 | spatial | ✅ |
+| text_019_002 | image_017_000 | 0.689 | caption | ✅ |
 
-| text_016_000 | image_017_000 | 0.683 | spatial | ✅ |
+| text_016_001 | image_017_000 | 0.680 | caption | ✅ |
 
-| text_016_003 | image_017_000 | 0.679 | spatial | ✅ |
+| text_015_004 | image_017_000 | 0.680 | caption | ✅ |
 
-| text_017_017 | image_017_000 | 0.647 | spatial | ✅ |
+| text_022_003 | image_017_000 | 0.677 | caption | ✅ |
 
-| text_016_002 | image_017_002 | 0.696 | spatial | ✅ |
+| text_019_002 | image_017_002 | 0.666 | caption | ✅ |
 
-| text_016_003 | image_017_002 | 0.691 | spatial | ✅ |
+| text_015_004 | image_017_002 | 0.664 | caption | ✅ |
 
-| text_016_006 | image_017_002 | 0.674 | spatial | ✅ |
+| text_013_003 | image_017_002 | 0.661 | caption | ✅ |
 
-| text_016_007 | image_017_002 | 0.657 | spatial | ✅ |
+| text_006_002 | image_017_002 | 0.660 | caption | ✅ |
 
-| text_016_008 | image_017_002 | 0.652 | spatial | ✅ |
+| text_011_004 | image_017_002 | 0.659 | caption | ✅ |
 
-| text_016_002 | image_017_003 | 0.678 | spatial | ✅ |
+| text_015_004 | image_017_003 | 0.652 | caption | ✅ |
 
-| text_016_006 | image_017_003 | 0.641 | spatial | ✅ |
+| text_019_002 | image_017_003 | 0.650 | caption | ✅ |
 
-| text_017_017 | image_017_003 | 0.616 | spatial | ✅ |
+| text_011_004 | image_017_003 | 0.644 | caption | ✅ |
 
-| text_016_013 | image_017_003 | 0.616 | spatial | ✅ |
+| text_016_002 | image_017_003 | 0.644 | caption | ✅ |
 
-| text_018_012 | image_017_003 | 0.616 | spatial | ✅ |
+| text_013_003 | image_017_003 | 0.643 | caption | ✅ |
 
 
 

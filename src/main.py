@@ -19,6 +19,7 @@ from .association.allen_logic import AllenLogicAnalyzer
 from .association.caption_detector import CaptionDetector
 from .association.spatial_analyzer import SpatialAnalyzer
 from .association.semantic_analyzer import SemanticAnalyzer
+from .association.association_optimizer import AssociationOptimizer, create_balanced_config
 from .markdown import MarkdownGenerator
 from .utils.file_utils import ensure_directory_exists, get_file_hash
 from .utils.validation import validate_file_path, check_file_safety
@@ -46,6 +47,9 @@ class DocumentProcessor:
         self.spatial_analyzer = SpatialAnalyzer()
         self.semantic_analyzer = SemanticAnalyzer()
         self.association_scorer = AssociationScorer()
+        
+        # 初始化關聯優化器
+        self.association_optimizer = AssociationOptimizer(create_balanced_config())
         
         # 性能監控
         self.performance_logger = PerformanceLogger()
@@ -168,10 +172,19 @@ class DocumentProcessor:
                 except Exception as e:
                     logger.warning(f"關聯分析失敗 - 文本塊: {text_block.id}, 圖片: {image.id}, 錯誤: {e}")
         
-        # 按關聯度排序
-        associations.sort(key=lambda x: x["final_score"], reverse=True)
+        # 🔧 關聯優化 - 去重、過濾和質量提升
+        logger.info(f"開始關聯優化 - 原始關聯數: {len(associations)}")
         
-        return associations
+        optimized_associations = self.association_optimizer.optimize_associations(
+            associations=associations,
+            images=parsed_content.images,
+            text_blocks=parsed_content.text_blocks
+        )
+        
+        logger.info(f"關聯優化完成 - 優化後關聯數: {len(optimized_associations)}")
+        logger.info(f"關聯減少率: {((len(associations) - len(optimized_associations)) / len(associations) * 100):.1f}%" if associations else "0%")
+        
+        return optimized_associations
     
     def _perform_association_analysis(self, text_block, image) -> Dict[str, Any]:
         """執行單個文本塊和圖片的關聯分析"""
@@ -193,15 +206,22 @@ class DocumentProcessor:
             image.alt_text or f"Image {image.id}"
         )
         
-        # 4. 綜合評分
-        # 計算空間評分（基於空間特徵）
-        spatial_score = min(1.0, 1.0 - min(spatial_features.center_distance / 1000.0, 1.0))
-        
-        # 計算佈局評分（基於對齊特徵）
-        layout_score = spatial_features.alignment_score
-        
-        # 計算距離評分（基於最小距離）
-        proximity_score = min(1.0, 1.0 - min(spatial_features.min_distance / 500.0, 1.0))
+        # 4. 綜合評分 - 使用動態歸一化
+        if spatial_features:
+            # 估算頁面尺寸（使用所有元素的最大座標）
+            page_width = max(text_block.bbox.right, image.bbox.right)
+            page_height = max(text_block.bbox.bottom, image.bbox.bottom)
+            page_diagonal = (page_width ** 2 + page_height ** 2) ** 0.5
+            
+            # 使用頁面對角線的比例作為歸一化基準
+            # 對角線的50%作為"中距離"，30%作為"近距離"
+            spatial_score = 1.0 - min(spatial_features.center_distance / (page_diagonal * 0.5), 1.0)
+            proximity_score = 1.0 - min(spatial_features.min_distance / (page_diagonal * 0.3), 1.0)
+            layout_score = spatial_features.alignment_score
+        else:
+            spatial_score = 0.0
+            proximity_score = 0.0
+            layout_score = 0.0
         
         final_score, details = self.association_scorer.calculate_simple_score(
             caption_score=caption_score,
@@ -275,9 +295,26 @@ class DocumentProcessor:
         # 保存關聯分析結果
         if save_associations:
             import json
+            from enum import Enum
+            
+            # 序列化助手函數
+            def serialize_for_json(obj):
+                if isinstance(obj, Enum):
+                    return obj.value
+                elif hasattr(obj, '__dict__'):
+                    return {k: serialize_for_json(v) for k, v in obj.__dict__.items()}
+                elif isinstance(obj, (list, tuple)):
+                    return [serialize_for_json(item) for item in obj]
+                elif isinstance(obj, dict):
+                    return {k: serialize_for_json(v) for k, v in obj.items()}
+                else:
+                    return obj
+            
+            serializable_associations = serialize_for_json(associations)
+            
             associations_path = Path(output_dir) / f"{base_name}_{timestamp}_associations.json"
             with open(associations_path, 'w', encoding='utf-8') as f:
-                json.dump(associations, f, ensure_ascii=False, indent=2)
+                json.dump(serializable_associations, f, ensure_ascii=False, indent=2)
             output_files["associations"] = str(associations_path)
         
         return output_files

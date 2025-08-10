@@ -288,9 +288,7 @@ class APISettings(BaseSettings):
         default=["http://localhost:3000"], description="CORS允許的源"
     )
     
-    # 限流配置
-    rate_limit_enabled: bool = Field(default=True, description="啟用限流")
-    rate_limit_requests_per_minute: int = Field(default=60, description="每分鐘請求數限制")
+    # 限流配置（從AppSettings繼承，避免重複定義）
     
     class Config:
         env_prefix = ""

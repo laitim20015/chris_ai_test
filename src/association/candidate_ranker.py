@@ -436,3 +436,4 @@ def rank_image_text_associations(text_candidates: List[Dict[str, Any]],
     """
     ranker = CandidateRanker()
     return ranker.rank_candidates(text_candidates, image_bbox, image_content, context_info)
+

@@ -469,3 +469,4 @@ def clear_global_cache():
     global _global_cache_manager
     if _global_cache_manager:
         _global_cache_manager.clear()
+

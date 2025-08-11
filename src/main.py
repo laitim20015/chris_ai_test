@@ -20,6 +20,7 @@ from .association.caption_detector import CaptionDetector
 from .association.spatial_analyzer import SpatialAnalyzer
 from .association.semantic_analyzer import SemanticAnalyzer
 from .association.association_optimizer import AssociationOptimizer, create_balanced_config
+from .association.candidate_ranker import CandidateRanker
 from .markdown import MarkdownGenerator
 from .utils.file_utils import ensure_directory_exists, get_file_hash
 from .utils.validation import validate_file_path, check_file_safety
@@ -50,6 +51,12 @@ class DocumentProcessor:
         
         # 初始化關聯優化器
         self.association_optimizer = AssociationOptimizer(create_balanced_config())
+        
+        # 初始化候選排序器（智能關聯選擇）
+        self.candidate_ranker = CandidateRanker(
+            caption_detector=self.caption_detector,
+            semantic_analyzer=self.semantic_analyzer
+        )
         
         # 性能監控
         self.performance_logger = PerformanceLogger()
@@ -152,28 +159,77 @@ class DocumentProcessor:
         return parser.parse(file_path)
     
     def _analyze_associations(self, parsed_content: ParsedContent) -> List[Dict[str, Any]]:
-        """分析圖文關聯關係"""
+        """分析圖文關聯關係 - 使用智能候選排序策略"""
         
         associations = []
         
         # 收集所有元素供增強空間分析使用
         self._current_all_elements = parsed_content.text_blocks + parsed_content.images
         
-        for text_block in parsed_content.text_blocks:
-            for image in parsed_content.images:
-                try:
-                    # 執行多層次關聯分析
-                    association_result = self._perform_association_analysis(
-                        text_block, image, parsed_content
-                    )
-                    
-                    # 只保留高於閾值的關聯
-                    threshold = self.settings.association.min_association_score
-                    if association_result["final_score"] >= threshold:
-                        associations.append(association_result)
+        # 準備上下文信息
+        context_info = {
+            'all_elements': self._current_all_elements,
+            # 已移除硬編碼layout_type，讓增強空間分析自動檢測佈局
+        }
+        
+        logger.info(f"開始智能圖文關聯分析 - 圖片數: {len(parsed_content.images)}, 文本塊數: {len(parsed_content.text_blocks)}")
+        
+        # 🎯 核心改進：圖片優先的智能候選排序策略
+        for image in parsed_content.images:
+            try:
+                # 準備候選文本列表（所有文本塊都是潛在候選）
+                text_candidates = [
+                    {
+                        'id': text_block.id,
+                        'content': text_block.content,
+                        'bbox': text_block.bbox
+                    }
+                    for text_block in parsed_content.text_blocks
+                ]
+                
+                # 使用CandidateRanker進行智能排序
+                ranked_candidates = self.candidate_ranker.rank_candidates(
+                    text_candidates=text_candidates,
+                    image_bbox=image.bbox,
+                    image_content=getattr(image, 'description', None),
+                    context_info=context_info
+                )
+                
+                # 選擇推薦的候選進行詳細關聯分析
+                threshold = self.settings.association.min_association_score
+                
+                for ranked_candidate in ranked_candidates:
+                    # 只處理推薦的候選或高分候選
+                    if (ranked_candidate.is_recommended or 
+                        ranked_candidate.scores.final_score >= threshold):
                         
-                except Exception as e:
-                    logger.warning(f"關聯分析失敗 - 文本塊: {text_block.id}, 圖片: {image.id}, 錯誤: {e}")
+                        # 從ranked_candidate轉換回text_block格式
+                        text_block = next(
+                            (tb for tb in parsed_content.text_blocks 
+                             if tb.id == ranked_candidate.text_id), 
+                            None
+                        )
+                        
+                        if text_block:
+                            # 執行完整的關聯分析
+                            association_result = self._perform_association_analysis(
+                                text_block, image, parsed_content
+                            )
+                            
+                            # 融合CandidateRanker的排序信息
+                            association_result.update({
+                                'candidate_rank': ranked_candidate.rank,
+                                'candidate_quality': ranked_candidate.scores.quality.value,
+                                'candidate_reasoning': ranked_candidate.reasoning,
+                                'is_candidate_recommended': ranked_candidate.is_recommended
+                            })
+                            
+                            associations.append(association_result)
+                
+                logger.debug(f"圖片 {image.id} 完成候選排序，找到 {len([c for c in ranked_candidates if c.is_recommended])} 個推薦關聯")
+                
+            except Exception as e:
+                logger.warning(f"圖片 {image.id} 的智能關聯分析失敗: {e}")
         
         # 🔧 關聯優化 - 去重、過濾和質量提升
         logger.info(f"開始關聯優化 - 原始關聯數: {len(associations)}")
@@ -184,7 +240,7 @@ class DocumentProcessor:
             text_blocks=parsed_content.text_blocks
         )
         
-        logger.info(f"關聯優化完成 - 優化後關聯數: {len(optimized_associations)}")
+        logger.info(f"智能關聯分析完成 - 優化後關聯數: {len(optimized_associations)}")
         logger.info(f"關聯減少率: {((len(associations) - len(optimized_associations)) / len(associations) * 100):.1f}%" if associations else "0%")
         
         return optimized_associations
@@ -218,7 +274,7 @@ class DocumentProcessor:
             
             context_info = {
                 'all_elements': all_elements,
-                'layout_type': 'single_column',  # 默認設置，後續可擴展為動態檢測
+                # 移除硬編碼的layout_type，讓增強空間分析自動檢測佈局
                 'text_content': text_block.content  # 傳遞文本內容以供分析
             }
             

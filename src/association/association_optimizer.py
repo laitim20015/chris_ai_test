@@ -178,6 +178,8 @@ class AssociationOptimizer:
                 boost_factor = self.config.caption_boost_factor
                 assoc["adjusted_score"] = assoc.get("adjusted_score", assoc["final_score"]) * boost_factor
                 assoc["caption_boosted"] = True
+                # 同步更新關聯類型為caption，確保輸出一致性
+                assoc["association_type"] = "caption"
                 
                 self.logger.debug(f"Caption加成: {assoc['final_score']:.3f} -> {assoc['adjusted_score']:.3f}")
             else:

@@ -2,8 +2,8 @@
 
 ## 測試概述
 - **測試文件**: tests\fixtures\documents\Workflows-sample.pdf
-- **測試時間**: 2025-08-11T02:24:24.003758
-- **總處理時間**: 25.86秒
+- **測試時間**: 2025-08-11T21:48:29.691669
+- **總處理時間**: 25.43秒
 
 ## 文檔信息
 - **文件名**: Workflows-sample.pdf
@@ -19,9 +19,9 @@
 - **嵌入圖片數**: 15
 
 ## 性能指標
-- **document_parsing**: 0.50秒
+- **document_parsing**: 0.49秒
 - **image_processing**: 0.17秒
-- **association_analysis**: 25.18秒
+- **association_analysis**: 24.77秒
 - **markdown_generation**: 0.01秒
 - **result_validation**: 0.00秒
 

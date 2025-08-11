@@ -156,12 +156,15 @@ class DocumentProcessor:
         
         associations = []
         
+        # 收集所有元素供增強空間分析使用
+        self._current_all_elements = parsed_content.text_blocks + parsed_content.images
+        
         for text_block in parsed_content.text_blocks:
             for image in parsed_content.images:
                 try:
                     # 執行多層次關聯分析
                     association_result = self._perform_association_analysis(
-                        text_block, image
+                        text_block, image, parsed_content
                     )
                     
                     # 只保留高於閾值的關聯
@@ -186,7 +189,7 @@ class DocumentProcessor:
         
         return optimized_associations
     
-    def _perform_association_analysis(self, text_block, image) -> Dict[str, Any]:
+    def _perform_association_analysis(self, text_block, image, parsed_content: ParsedContent = None) -> Dict[str, Any]:
         """執行單個文本塊和圖片的關聯分析"""
         
         # 1. Caption檢測
@@ -206,26 +209,60 @@ class DocumentProcessor:
             image.alt_text or f"Image {image.id}"
         )
         
-        # 4. 綜合評分 - 使用動態歸一化
-        if spatial_features:
-            # 估算頁面尺寸（使用所有元素的最大座標）
-            page_width = max(text_block.bbox.right, image.bbox.right)
-            page_height = max(text_block.bbox.bottom, image.bbox.bottom)
-            page_diagonal = (page_width ** 2 + page_height ** 2) ** 0.5
+        # 4. 增強的空間關係分析（使用改進的算法）
+        try:
+            # 創建上下文信息（用於增強空間分析）
+            all_elements = getattr(self, '_current_all_elements', [])
+            if parsed_content:
+                all_elements = parsed_content.text_blocks + parsed_content.images
             
-            # 使用頁面對角線的比例作為歸一化基準
-            # 對角線的50%作為"中距離"，30%作為"近距離"
-            spatial_score = 1.0 - min(spatial_features.center_distance / (page_diagonal * 0.5), 1.0)
-            proximity_score = 1.0 - min(spatial_features.min_distance / (page_diagonal * 0.3), 1.0)
-            layout_score = spatial_features.alignment_score
+            context_info = {
+                'all_elements': all_elements,
+                'layout_type': 'single_column',  # 默認設置，後續可擴展為動態檢測
+                'text_content': text_block.content  # 傳遞文本內容以供分析
+            }
+            
+            # 使用增強的空間分析（僅用於空間關係部分）
+            enhanced_result = self.spatial_analyzer.calculate_enhanced_spatial_features(
+                text_block.bbox, image.bbox, context_info
+            )
+            
+            # 提取空間分析結果
+            enhanced_spatial_score = enhanced_result['final_score']  # 這是改進後的空間分數
+            
+            # 可選：記錄詳細分析信息供調試
+            logger.debug(f"增強空間分析詳情 - 關係: {enhanced_result['details']['relationship']}, "
+                        f"空間分數: {enhanced_spatial_score:.3f}")
+            
+        except Exception as e:
+            # 備選方案：使用傳統空間分析方法
+            logger.warning(f"增強空間分析失敗，使用傳統方法: {e}")
+            
+            if spatial_features:
+                # 估算頁面尺寸（使用所有元素的最大座標）
+                page_width = max(text_block.bbox.right, image.bbox.right)
+                page_height = max(text_block.bbox.bottom, image.bbox.bottom)
+                page_diagonal = (page_width ** 2 + page_height ** 2) ** 0.5
+                
+                # 使用傳統的空間分數計算
+                enhanced_spatial_score = 1.0 - min(spatial_features.center_distance / (page_diagonal * 0.5), 1.0)
+            else:
+                enhanced_spatial_score = 0.0
+        
+        # 5. 綜合評分 - 按照項目規則的權重模型
+        # Caption 40% + Spatial 30% + Semantic 15% + Layout 10% + Proximity 5%
+        
+        # 佈局和距離分數（從增強空間分析中獲取）
+        if 'enhanced_result' in locals() and enhanced_result:
+            layout_score = enhanced_result['component_scores'].get('alignment', 0.5)
+            proximity_score = enhanced_result['component_scores'].get('distance', 0.5)
         else:
-            spatial_score = 0.0
-            proximity_score = 0.0
-            layout_score = 0.0
+            layout_score = spatial_features.alignment_score if spatial_features else 0.5
+            proximity_score = 0.5  # 預設值
         
         final_score, details = self.association_scorer.calculate_simple_score(
             caption_score=caption_score,
-            spatial_score=spatial_score,
+            spatial_score=enhanced_spatial_score,  # 使用增強的空間分數
             semantic_score=semantic_score,
             layout_score=layout_score,
             proximity_score=proximity_score
@@ -236,17 +273,18 @@ class DocumentProcessor:
             "image_id": image.id,
             "final_score": final_score,
             "caption_score": caption_score,
-            "spatial_score": spatial_score,
+            "spatial_score": enhanced_spatial_score,  # 使用增強的空間分數
             "semantic_score": semantic_score,
             "layout_score": layout_score,
             "proximity_score": proximity_score,
-            "spatial_relation": "calculated",  # 由空間特徵計算得出
+            "spatial_relation": "enhanced",  # 使用增強的空間分析
             "association_type": "caption" if caption_score > 0.5 else "spatial",
             "details": details,
+            "enhanced_spatial_details": enhanced_result.get('details', {}) if 'enhanced_result' in locals() else {},
             "spatial_features": {
-                "center_distance": spatial_features.center_distance,
-                "alignment_score": spatial_features.alignment_score,
-                "min_distance": spatial_features.min_distance
+                "center_distance": spatial_features.center_distance if spatial_features else 0,
+                "alignment_score": spatial_features.alignment_score if spatial_features else 0,
+                "min_distance": spatial_features.min_distance if spatial_features else 0
             }
         }
     

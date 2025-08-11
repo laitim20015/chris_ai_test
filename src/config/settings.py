@@ -168,6 +168,128 @@ class AssociationSettings(BaseSettings):
         env_prefix = "CAPTION_"
         case_sensitive = False
 
+class SpatialAnalysisSettings(BaseSettings):
+    """空間分析增強配置（Phase 1-3 的算法參數）"""
+    
+    # 垂直關係分析參數
+    vertical_threshold: float = Field(
+        default=0.3, ge=0.0, le=1.0, description="垂直關係判斷閾值"
+    )
+    natural_reading_weight: float = Field(
+        default=0.7, ge=0.0, le=1.0, description="自然閱讀順序權重"
+    )
+    vertical_distance_factor: float = Field(
+        default=1.5, ge=1.0, le=3.0, description="垂直距離影響因子"
+    )
+    
+    # 水平重疊分析參數
+    horizontal_overlap_min_threshold: float = Field(
+        default=0.3, ge=0.0, le=1.0, description="水平重疊最小閾值"
+    )
+    horizontal_overlap_strong_threshold: float = Field(
+        default=0.6, ge=0.0, le=1.0, description="強水平重疊閾值"
+    )
+    alignment_tolerance: float = Field(
+        default=10.0, ge=0.0, le=50.0, description="對齊容差（像素）"
+    )
+    
+    # 介入元素檢測參數
+    enable_intervening_detection: bool = Field(
+        default=True, description="是否啟用介入元素檢測"
+    )
+    intervening_penalty_factor: float = Field(
+        default=0.2, ge=0.0, le=1.0, description="介入元素懲罰因子"
+    )
+    max_intervening_elements: int = Field(
+        default=3, ge=0, le=10, description="最大允許介入元素數量"
+    )
+    
+    # 動態距離歸一化參數
+    enable_dynamic_normalization: bool = Field(
+        default=True, description="是否啟用動態距離歸一化"
+    )
+    page_size_influence: float = Field(
+        default=0.3, ge=0.0, le=1.0, description="頁面尺寸影響權重"
+    )
+    document_density_influence: float = Field(
+        default=0.2, ge=0.0, le=1.0, description="文檔密度影響權重"
+    )
+    min_normalized_distance: float = Field(
+        default=0.1, ge=0.0, le=1.0, description="最小歸一化距離"
+    )
+    
+    # 佈局分析參數（Phase 2）
+    enable_column_detection: bool = Field(
+        default=True, description="是否啟用欄位檢測"
+    )
+    column_gap_threshold: float = Field(
+        default=30.0, ge=10.0, le=100.0, description="欄位間隙閾值（像素）"
+    )
+    single_column_width_ratio: float = Field(
+        default=0.8, ge=0.5, le=1.0, description="單欄佈局寬度比例"
+    )
+    
+    # 候選排序參數（Phase 2）
+    enable_candidate_ranking: bool = Field(
+        default=True, description="是否啟用候選排序"
+    )
+    max_candidates_per_image: int = Field(
+        default=5, ge=1, le=10, description="每張圖片最大候選文本數"
+    )
+    score_decay_factor: float = Field(
+        default=0.8, ge=0.1, le=1.0, description="分數衰減因子"
+    )
+    
+    # Caption檢測增強參數（Phase 2）
+    caption_proximity_bonus: float = Field(
+        default=0.2, ge=0.0, le=0.5, description="Caption鄰近性加成"
+    )
+    above_caption_priority: float = Field(
+        default=1.5, ge=1.0, le=3.0, description="上方Caption優先級倍數"
+    )
+    below_caption_priority: float = Field(
+        default=1.2, ge=1.0, le=2.0, description="下方Caption優先級倍數"
+    )
+    
+    # 性能優化參數（Phase 3）
+    enable_spatial_cache: bool = Field(
+        default=True, description="是否啟用空間分析結果緩存"
+    )
+    cache_expiry_seconds: int = Field(
+        default=3600, ge=300, le=86400, description="緩存過期時間（秒）"
+    )
+    parallel_processing_threshold: int = Field(
+        default=10, ge=5, le=100, description="並行處理觸發閾值（元素數量）"
+    )
+    
+    # 調試和分析參數
+    enable_debug_info: bool = Field(
+        default=False, description="是否啟用詳細調試信息"
+    )
+    save_analysis_visualization: bool = Field(
+        default=False, description="是否保存分析可視化結果"
+    )
+    analysis_output_path: str = Field(
+        default="data/output/analysis", description="分析結果輸出路徑"
+    )
+    
+    @model_validator(mode='after')
+    def validate_spatial_settings(self):
+        """驗證空間分析配置的邏輯一致性"""
+        # 檢查重疊閾值關係
+        if self.horizontal_overlap_min_threshold >= self.horizontal_overlap_strong_threshold:
+            raise ValueError("強重疊閾值必須大於最小重疊閾值")
+        
+        # 檢查Caption優先級設置
+        if self.above_caption_priority < self.below_caption_priority:
+            raise ValueError("上方Caption優先級應該大於或等於下方Caption優先級")
+        
+        return self
+    
+    class Config:
+        env_prefix = "SPATIAL_"
+        case_sensitive = False
+
 class ImageSettings(BaseSettings):
     """圖片處理配置（按照項目規格文件要求）"""
     
@@ -356,6 +478,7 @@ class Settings(BaseSettings):
     app: AppSettings = Field(default_factory=AppSettings)
     parser: ParserSettings = Field(default_factory=ParserSettings)
     association: AssociationSettings = Field(default_factory=AssociationSettings)
+    spatial_analysis: SpatialAnalysisSettings = Field(default_factory=SpatialAnalysisSettings)
     image: ImageSettings = Field(default_factory=ImageSettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)

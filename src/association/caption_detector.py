@@ -270,6 +270,182 @@ class CaptionDetector:
         logger.debug(f"Caption檢測完成，找到 {len(matches)} 個匹配")
         return matches
     
+    def detect_captions_with_priority(self, candidates: List[Dict], image_bbox: BoundingBox) -> List[CaptionMatch]:
+        """
+        增強的Caption檢測 - 實施最近上方優先規則
+        
+        Args:
+            candidates: 候選文本塊列表，每個包含 {'text': str, 'bbox': BoundingBox, 'id': str}
+            image_bbox: 圖片邊界框
+            
+        Returns:
+            List[CaptionMatch]: 排序後的Caption匹配結果列表
+        """
+        all_matches = []
+        
+        # 1. 對每個候選進行Caption檢測
+        for candidate in candidates:
+            text = candidate.get('text', '')
+            text_bbox = candidate.get('bbox')
+            text_id = candidate.get('id', '')
+            
+            if not text or not text_bbox:
+                continue
+                
+            matches = self.detect_captions(text, text_bbox, image_bbox)
+            
+            # 為每個匹配添加候選信息
+            for match in matches:
+                enhanced_match = CaptionMatch(
+                    text=match.text,
+                    caption_type=match.caption_type,
+                    position=match.position,
+                    confidence=match.confidence,
+                    pattern_used=match.pattern_used,
+                    start_pos=match.start_pos,
+                    end_pos=match.end_pos
+                )
+                
+                # 添加額外信息
+                enhanced_match_dict = enhanced_match._asdict()
+                enhanced_match_dict['text_id'] = text_id
+                enhanced_match_dict['text_bbox'] = text_bbox
+                enhanced_match_dict['full_text'] = text
+                
+                all_matches.append(enhanced_match_dict)
+        
+        if not all_matches:
+            return []
+        
+        # 2. 應用最近上方優先規則
+        prioritized_matches = self._apply_nearest_above_priority(all_matches, image_bbox)
+        
+        # 3. 轉換回CaptionMatch格式
+        result_matches = []
+        for match_dict in prioritized_matches:
+            caption_match = CaptionMatch(
+                text=match_dict['text'],
+                caption_type=match_dict['caption_type'],
+                position=match_dict['position'],
+                confidence=match_dict['confidence'],
+                pattern_used=match_dict['pattern_used'],
+                start_pos=match_dict['start_pos'],
+                end_pos=match_dict['end_pos']
+            )
+            result_matches.append(caption_match)
+        
+        logger.debug(f"優先級Caption檢測完成，處理 {len(candidates)} 個候選，找到 {len(result_matches)} 個匹配")
+        return result_matches
+    
+    def _apply_nearest_above_priority(self, matches: List[Dict], image_bbox: BoundingBox) -> List[Dict]:
+        """
+        實施最近上方優先規則
+        
+        Args:
+            matches: 匹配結果列表
+            image_bbox: 圖片邊界框
+            
+        Returns:
+            List[Dict]: 應用優先規則後的匹配列表
+        """
+        # 1. 分類匹配：上方、下方、其他
+        above_matches = []
+        below_matches = []
+        other_matches = []
+        
+        for match in matches:
+            text_bbox = match['text_bbox']
+            
+            if text_bbox.bottom <= image_bbox.top:
+                # 文本在圖片上方
+                vertical_distance = image_bbox.top - text_bbox.bottom
+                match['vertical_distance'] = vertical_distance
+                match['relative_position'] = 'above'
+                above_matches.append(match)
+            elif text_bbox.top >= image_bbox.bottom:
+                # 文本在圖片下方
+                vertical_distance = text_bbox.top - image_bbox.bottom
+                match['vertical_distance'] = vertical_distance
+                match['relative_position'] = 'below'
+                below_matches.append(match)
+            else:
+                # 重疊或其他情況
+                match['vertical_distance'] = 0
+                match['relative_position'] = 'overlap'
+                other_matches.append(match)
+        
+        # 2. 應用最近上方優先規則
+        if above_matches:
+            # 按垂直距離排序（最近的在前）
+            above_matches.sort(key=lambda x: x['vertical_distance'])
+            
+            # 最近的上方匹配獲得顯著加分
+            nearest_above = above_matches[0]
+            reasonable_distance = image_bbox.height * 2  # 2倍圖片高度內算合理
+            
+            if nearest_above['vertical_distance'] <= reasonable_distance:
+                # 距離合理，給予30%加分
+                boost_factor = 1.3
+                nearest_above['confidence'] *= boost_factor
+                nearest_above['priority_boost'] = boost_factor
+                
+                # 檢查是否有明確的Caption指示詞
+                if self._has_strong_caption_indicators(nearest_above['full_text']):
+                    # 有強指示詞，再給予20%加分
+                    additional_boost = 1.2
+                    nearest_above['confidence'] *= additional_boost
+                    nearest_above['caption_indicator_boost'] = additional_boost
+                
+                logger.debug(f"最近上方匹配獲得優先級提升: {nearest_above['text'][:20]}...")
+        
+        # 3. 距離懲罰機制
+        max_reasonable_distance = image_bbox.height * 3  # 3倍圖片高度
+        
+        for match in above_matches + below_matches:
+            if match['vertical_distance'] > max_reasonable_distance:
+                # 距離過遠，應用懲罰
+                distance_penalty = max(0.5, 1.0 - (match['vertical_distance'] - max_reasonable_distance) / max_reasonable_distance)
+                match['confidence'] *= distance_penalty
+                match['distance_penalty'] = distance_penalty
+        
+        # 4. 合併並按置信度重新排序
+        all_processed_matches = above_matches + below_matches + other_matches
+        all_processed_matches.sort(key=lambda x: x['confidence'], reverse=True)
+        
+        return all_processed_matches
+    
+    def _has_strong_caption_indicators(self, text: str) -> bool:
+        """
+        檢查文本是否包含強Caption指示詞
+        
+        Args:
+            text: 文本內容
+            
+        Returns:
+            bool: 是否包含強指示詞
+        """
+        strong_indicators = [
+            r'下列?圖\w*',
+            r'如圖\s*\d*所示',
+            r'見圖\s*\d+',
+            r'圖\s*\d+[\.:：]',
+            r'表\s*\d+[\.:：]',
+            r'圖表\s*\d*[\.:：]',
+            r'示意圖[\.:：]',
+            r'流程圖[\.:：]',
+            r'(下|以下)(圖|表|圖表)[\.:：]',
+            r'Figure\s+\d+[\.:：]',
+            r'Table\s+\d+[\.:：]',
+            r'Chart\s+\d+[\.:：]',
+            r'Diagram\s+\d+[\.:：]'
+        ]
+        
+        for pattern in strong_indicators:
+            if re.search(pattern, text, re.IGNORECASE):
+                return True
+        
+        return False
+    
     def _match_patterns(self, text: str) -> List[Dict]:
         """
         對文本進行模式匹配

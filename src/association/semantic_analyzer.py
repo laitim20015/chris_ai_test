@@ -43,15 +43,48 @@ class SemanticAnalyzer:
         self.logger = get_logger("semantic_analyzer")
         self.config = None  # 配置對象，可以在後續設置
         
-        # 嘗試加載模型
+        # 嘗試加載模型（添加離線模式和錯誤處理）
         try:
             from sentence_transformers import SentenceTransformer
-            self.model = SentenceTransformer(model_name)
-            logger.info(f"語義分析模型載入成功: {model_name}")
+            
+            # 優先嘗試使用本地緩存模型（避免網路請求）
+            try:
+                # 設置離線模式，優先使用本地模型
+                import os
+                os.environ['TRANSFORMERS_OFFLINE'] = '1'
+                self.model = SentenceTransformer(model_name, local_files_only=True)
+                logger.info(f"語義分析模型載入成功（本地緩存）: {model_name}")
+            except Exception as local_error:
+                logger.info(f"本地模型未找到，嘗試在線下載: {local_error}")
+                # 清除離線模式，嘗試在線下載
+                if 'TRANSFORMERS_OFFLINE' in os.environ:
+                    del os.environ['TRANSFORMERS_OFFLINE']
+                
+                # 添加重試機制和超時設置
+                import time
+                for attempt in range(3):
+                    try:
+                        self.model = SentenceTransformer(model_name)
+                        logger.info(f"語義分析模型在線載入成功: {model_name}")
+                        break
+                    except Exception as e:
+                        if "429" in str(e) or "Too Many Requests" in str(e):
+                            wait_time = (attempt + 1) * 10  # 指數退避：10s, 20s, 30s
+                            logger.warning(f"遇到速率限制，等待 {wait_time} 秒後重試...")
+                            time.sleep(wait_time)
+                            continue
+                        else:
+                            raise e
+                else:
+                    raise Exception("多次重試後仍無法下載模型")
+                    
         except ImportError:
             logger.warning("sentence-transformers未安裝，使用基礎相似度計算")
+            self.model = None
         except Exception as e:
             logger.error(f"模型載入失敗: {e}")
+            logger.warning("將使用備用語義分析方法")
+            self.model = None
     
     def calculate_text_similarity(self, text1: str, text2: str) -> SemanticSimilarity:
         """

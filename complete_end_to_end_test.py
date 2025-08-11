@@ -19,6 +19,10 @@ import asyncio
 from pathlib import Path
 from datetime import datetime
 
+# 設置離線模式，避免Hugging Face模型下載問題
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
+os.environ['HF_DATASETS_OFFLINE'] = '1'
+
 # 添加src到Python路径
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
@@ -103,17 +107,19 @@ class CompleteEndToEndTest:
         start_time = datetime.now()
         
         try:
-            # 直接使用解析器工廠進行文檔解析
-            from src.parsers.parser_factory import ParserFactory
-            parser_factory = ParserFactory()
+            # 修復解析器工廠的使用
+            from src.parsers.parser_factory import initialize_default_parsers, get_parser_for_file
+            
+            # 手動初始化解析器（修復工廠問題）
+            self.logger.info("🔧 初始化解析器...")
+            initialize_default_parsers()
             
             # 解析文檔
             self.logger.info("🔍 開始解析PDF文檔...")
-            file_extension = self.test_file.suffix.lower()
-            parser = parser_factory.get_parser(file_extension)
+            parser = get_parser_for_file(str(self.test_file))
             
             if not parser:
-                raise ValueError(f"不支持的文件格式: {file_extension}")
+                raise ValueError(f"不支持的文件格式: {self.test_file.suffix}")
             
             parsed_content = await asyncio.to_thread(
                 parser.parse,
@@ -283,56 +289,31 @@ class CompleteEndToEndTest:
                     if abs(text_block.page_number - image.page_number) > 1:
                         continue
                     
-                    # Caption檢測
-                    caption_matches = await asyncio.to_thread(
-                        caption_detector.detect_captions,
-                        text_block.content,
-                        text_block.bbox,
-                        image.bbox
-                    )
-                    # 計算Caption分數（取最高分數）
-                    caption_score = max((match.confidence for match in caption_matches), default=0.0)
+                    # 🎯 使用修復後的完整關聯分析系統（通過DocumentProcessor）
+                    # 這確保我們使用最新修復的關聯算法和權重模型
                     
-                    # 空間關係分析
-                    spatial_features = await asyncio.to_thread(
-                        spatial_analyzer.calculate_spatial_features,
-                        text_block.bbox,
-                        image.bbox
+                    # 創建DocumentProcessor實例以使用完整的關聯分析
+                    from src.main import DocumentProcessor
+                    processor = DocumentProcessor()
+                    
+                    # 使用完整的關聯分析方法
+                    association_result = await asyncio.to_thread(
+                        processor._perform_association_analysis,
+                        text_block,
+                        image,
+                        parsed_content  # 提供完整上下文
                     )
                     
-                    # 語義相似度分析
-                    semantic_score = await asyncio.to_thread(
-                        semantic_analyzer.calculate_similarity,
-                        text_block.content,
-                        f"圖片位於頁面{image.page_number}"  # 簡化的圖片描述
-                    )
+                    # 提取所有分數
+                    final_score = association_result.get('final_score', 0.0)
+                    caption_score = association_result.get('caption_score', 0.0)
+                    spatial_score = association_result.get('spatial_score', 0.0)
+                    semantic_score = association_result.get('semantic_score', 0.0)
+                    layout_score = association_result.get('layout_score', 0.0)
+                    proximity_score = association_result.get('proximity_score', 0.0)
                     
-                    # 計算完整5維度評分 - 使用動態歸一化
-                    if spatial_features:
-                        # 估算頁面尺寸（使用所有元素的最大座標）
-                        page_width = max(text_block.bbox.right, image.bbox.right)
-                        page_height = max(text_block.bbox.bottom, image.bbox.bottom)
-                        page_diagonal = (page_width ** 2 + page_height ** 2) ** 0.5
-                        
-                        # 使用頁面對角線的比例作為歸一化基準
-                        # 對角線的30%作為"近距離"，50%作為"中距離"
-                        spatial_score = 1.0 - min(spatial_features.center_distance / (page_diagonal * 0.5), 1.0)
-                        proximity_score = 1.0 - min(spatial_features.min_distance / (page_diagonal * 0.3), 1.0)
-                        layout_score = spatial_features.alignment_score
-                    else:
-                        spatial_score = 0.0
-                        proximity_score = 0.0
-                        layout_score = 0.0
-                    
-                    score_result = await asyncio.to_thread(
-                        association_scorer.calculate_simple_score,
-                        caption_score=caption_score,
-                        spatial_score=spatial_score,
-                        semantic_score=semantic_score,
-                        layout_score=layout_score,      # 新增佈局評分
-                        proximity_score=proximity_score  # 新增距離評分
-                    )
-                    final_score, score_details = score_result
+                    # 獲取詳細分析結果
+                    score_details = association_result.get('details', {})
                     
                     # 使用配置化閾值判斷關聯
                     threshold = self.settings.association.min_association_score

@@ -177,15 +177,24 @@ class DocumentProcessor:
         # 🎯 核心改進：圖片優先的智能候選排序策略
         for image in parsed_content.images:
             try:
-                # 準備候選文本列表（所有文本塊都是潛在候選）
+                # 準備候選文本列表（僅同頁文本塊作為候選） 🔧 跨頁關聯修復
                 text_candidates = [
                     {
                         'id': text_block.id,
                         'content': text_block.content,
-                        'bbox': text_block.bbox
+                        'bbox': text_block.bbox,
+                        'page_number': text_block.page_number
                     }
                     for text_block in parsed_content.text_blocks
+                    if text_block.page_number == image.page_number  # 🎯 關鍵修復：頁面過濾
                 ]
+                
+                # 記錄候選過濾效果
+                if not text_candidates:
+                    logger.warning(f"圖片 {image.id} (第{image.page_number}頁) 沒有找到同頁文本塊候選")
+                    continue
+                else:
+                    logger.info(f"圖片 {image.id} (第{image.page_number}頁) 找到 {len(text_candidates)} 個同頁候選文本塊")
                 
                 # 使用CandidateRanker進行智能排序
                 ranked_candidates = self.candidate_ranker.rank_candidates(

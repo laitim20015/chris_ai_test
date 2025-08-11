@@ -218,11 +218,11 @@ class PyMuPDFParser:
         return text_blocks
     
     def _extract_images(self, page, page_num: int) -> List[ImageContent]:
-        """提取頁面圖片"""
+        """提取頁面圖片（包括嵌入圖片和向量圖形）"""
         images = []
         
         try:
-            # 獲取頁面圖片列表
+            # 1. 獲取傳統嵌入圖片
             image_list = page.get_images(full=True)
             
             for img_index, img in enumerate(image_list):
@@ -279,7 +279,176 @@ class PyMuPDFParser:
         except Exception as e:
             logger.warning(f"頁面 {page_num} 圖片提取失敗: {e}")
         
+        # 2. 檢測向量圖形
+        try:
+            vector_images = self._extract_vector_graphics(page, page_num, len(images))
+            images.extend(vector_images)
+            if vector_images:
+                logger.info(f"頁面 {page_num} 檢測到 {len(vector_images)} 個向量圖形")
+        except Exception as e:
+            logger.warning(f"頁面 {page_num} 向量圖形檢測失敗: {e}")
+        
         return images
+    
+    def _extract_vector_graphics(self, page, page_num: int, start_index: int) -> List[ImageContent]:
+        """檢測並提取向量圖形"""
+        vector_images = []
+        
+        try:
+            import math
+            from collections import defaultdict
+            
+            # 獲取所有繪圖對象
+            drawings = page.get_drawings()
+            
+            if not drawings:
+                return vector_images
+            
+            logger.debug(f"頁面 {page_num} 檢測到 {len(drawings)} 個繪圖對象")
+            
+            # 按空間接近度分組繪圖對象
+            drawing_groups = self._group_drawings_by_proximity(drawings)
+            
+            # 識別圖表區域
+            min_drawing_density = 10  # 最小繪圖對象數量
+            min_area = 5000  # 最小面積
+            
+            for group_id, group_drawings in drawing_groups.items():
+                if len(group_drawings) >= min_drawing_density:
+                    bbox = self._calculate_group_bbox(group_drawings)
+                    area = bbox.width * bbox.height
+                    
+                    if area >= min_area:
+                        # 創建向量圖形ImageContent
+                        img_index = start_index + len(vector_images)
+                        filename = f"page_{page_num:03d}_vector_{img_index:03d}.png"
+                        
+                        # 生成占位圖片數據（實際可以渲染向量圖形）
+                        placeholder_data = self._create_vector_placeholder(bbox, len(group_drawings))
+                        
+                        vector_image = ImageContent(
+                            id=generate_content_id("vector", page_num, img_index),
+                            filename=filename,
+                            format=ImageFormat.PNG,
+                            data=placeholder_data,
+                            width=int(bbox.width),
+                            height=int(bbox.height),
+                            bbox=bbox,
+                            page_number=page_num,
+                            image_index=img_index,
+                            alt_text=f"向量圖表 ({len(group_drawings)}個繪圖對象)"
+                        )
+                        
+                        vector_images.append(vector_image)
+                        
+                        logger.debug(f"創建向量圖形: {filename}, 位置({bbox.x:.1f}, {bbox.y:.1f}), "
+                                   f"尺寸({bbox.width:.1f}x{bbox.height:.1f}), "
+                                   f"{len(group_drawings)}個對象")
+            
+        except Exception as e:
+            logger.warning(f"向量圖形檢測失敗: {e}")
+        
+        return vector_images
+    
+    def _group_drawings_by_proximity(self, drawings: list, proximity_threshold: float = 100) -> dict:
+        """按空間接近度分組繪圖對象"""
+        if not drawings:
+            return {}
+        
+        import math
+        from collections import defaultdict
+        
+        # 為每個繪圖對象計算中心點
+        drawing_centers = []
+        for drawing in drawings:
+            rect = drawing.get('rect')
+            if rect:
+                center_x = rect.x0 + (rect.x1 - rect.x0) / 2
+                center_y = rect.y0 + (rect.y1 - rect.y0) / 2
+                drawing_centers.append((center_x, center_y, drawing))
+        
+        # 使用簡單的連通分量算法分組
+        groups = defaultdict(list)
+        visited = set()
+        group_id = 0
+        
+        for i, (x1, y1, drawing1) in enumerate(drawing_centers):
+            if i in visited:
+                continue
+                
+            # 開始新組
+            current_group = [drawing1]
+            visited.add(i)
+            stack = [(x1, y1, i)]
+            
+            while stack:
+                cx, cy, idx = stack.pop()
+                
+                # 查找附近的未訪問對象
+                for j, (x2, y2, drawing2) in enumerate(drawing_centers):
+                    if j in visited:
+                        continue
+                    
+                    distance = math.sqrt((x2 - cx) ** 2 + (y2 - cy) ** 2)
+                    if distance <= proximity_threshold:
+                        current_group.append(drawing2)
+                        visited.add(j)
+                        stack.append((x2, y2, j))
+            
+            if len(current_group) > 1:  # 只保留多對象組
+                groups[group_id] = current_group
+                group_id += 1
+        
+        return groups
+    
+    def _calculate_group_bbox(self, drawings: list):
+        """計算繪圖組的邊界框"""
+        if not drawings:
+            return create_bounding_box(0, 0, 0, 0)
+        
+        min_x = min_y = float('inf')
+        max_x = max_y = float('-inf')
+        
+        for drawing in drawings:
+            rect = drawing.get('rect')
+            if rect:
+                min_x = min(min_x, rect.x0)
+                min_y = min(min_y, rect.y0)
+                max_x = max(max_x, rect.x1)
+                max_y = max(max_y, rect.y1)
+        
+        return create_bounding_box(
+            min_x, min_y,
+            max_x - min_x, max_y - min_y
+        )
+    
+    def _create_vector_placeholder(self, bbox, drawing_count: int) -> bytes:
+        """創建向量圖形的占位數據"""
+        # 創建一個簡單的占位PNG
+        # 實際實現中可以渲染真實的向量圖形
+        try:
+            from PIL import Image, ImageDraw
+            
+            # 創建占位圖片
+            width = max(100, int(bbox.width))
+            height = max(100, int(bbox.height))
+            
+            img = Image.new('RGB', (width, height), color='lightgray')
+            draw = ImageDraw.Draw(img)
+            
+            # 繪製簡單的占位內容
+            draw.rectangle([10, 10, width-10, height-10], outline='blue', width=2)
+            draw.text((20, 20), f"向量圖表\n{drawing_count}個對象", fill='blue')
+            
+            # 轉換為bytes
+            import io
+            buffer = io.BytesIO()
+            img.save(buffer, format='PNG')
+            return buffer.getvalue()
+            
+        except ImportError:
+            # 如果沒有PIL，返回簡單的占位數據
+            return b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d\x08\x02\x00\x00\x00\xff\x80\x02\x03'
     
     def _extract_tables(self, page, page_num: int) -> List[TableContent]:
         """提取頁面表格"""
